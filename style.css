@@ -870,11 +870,6 @@ html, body {
   cursor: pointer;
 }
 
-.pelvis-contour {
-  stroke: rgba(255, 255, 255, 0.65);
-  pointer-events: none;
-}
-
 /* Destaque e Hover sobre membros anatômicos */
 .body-limb:hover .limb-path,
 .body-limb.highlight .limb-path {
@@ -892,18 +887,18 @@ html, body {
   100% { fill: #222638 !important; stroke: #ffffff !important; filter: drop-shadow(0 0 20px #dc2626) !important; }
 }
 
-/* Caixas Anatômicas Retangulares Estilo RPG Sombrio */
+/* Caixas Anatômicas Compactas e Elegantes */
 .limb-box {
   position: absolute;
   background: rgba(14, 15, 24, 0.93);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-medium);
-  border-radius: 6px;
-  padding: 6px 8px 5px;
+  border-radius: 5px;
+  padding: 4px 6px 3px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
+  gap: 2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
   z-index: 3;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
@@ -911,42 +906,42 @@ html, body {
 .limb-box:hover {
   border-color: var(--accent-gold);
   transform: scale(1.02);
-  box-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.25);
 }
 
-/* Posições Precisas dos Membros */
+/* Posições Precisas e Proporcionais */
 .limb-box-torso {
-  top: 92px;
+  top: 86px;
   left: 50%;
   transform: translateX(-50%);
-  width: 175px;
+  width: 142px;
 }
 .limb-box-torso:hover {
   transform: translateX(-50%) scale(1.02);
 }
 
 .limb-box-arm-right {
-  top: 152px;
-  left: 10px;
-  width: 146px;
+  top: 154px;
+  left: 8px;
+  width: 122px;
 }
 
 .limb-box-arm-left {
-  top: 152px;
-  right: 10px;
-  width: 146px;
+  top: 154px;
+  right: 8px;
+  width: 122px;
 }
 
 .limb-box-leg-right {
-  bottom: 64px;
-  left: 14px;
-  width: 146px;
+  bottom: 58px;
+  left: 12px;
+  width: 122px;
 }
 
 .limb-box-leg-left {
-  bottom: 64px;
-  right: 14px;
-  width: 146px;
+  bottom: 58px;
+  right: 12px;
+  width: 122px;
 }
 
 /* Cabeçalho do Card: ATUAL | MÁXIMO */
@@ -954,21 +949,21 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2px;
+  padding: 0 1px;
 }
 
 .limb-col-label {
-  font-size: 0.64rem;
+  font-size: 0.58rem;
   font-weight: 800;
   font-family: var(--font-serif);
   color: var(--accent-gold);
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
 }
 
 .limb-injury-chk {
-  width: 13px;
-  height: 13px;
+  width: 11px;
+  height: 11px;
   accent-color: var(--accent-crimson);
   cursor: pointer;
   opacity: 0.8;
@@ -986,8 +981,8 @@ html, body {
   justify-content: space-between;
   background: var(--bg-recessed);
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 3px 4px;
+  border-radius: 3px;
+  padding: 2px 3px;
   margin: 1px 0;
 }
 
@@ -995,29 +990,29 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
 }
 
 .limb-box-sep {
   width: 1px;
-  height: 18px;
+  height: 14px;
   background: var(--border-subtle);
-  margin: 0 3px;
+  margin: 0 2px;
 }
 
 .btn-limb-step, .btn-limb-max-step {
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 900;
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 2px;
   cursor: pointer;
   padding: 0;
   line-height: 1;
@@ -1032,10 +1027,10 @@ html, body {
 
 .limb-cur, .limb-max {
   font-family: var(--font-serif);
-  font-size: 1.05rem;
+  font-size: 0.92rem;
   font-weight: 900;
   color: #ffffff;
-  min-width: 16px;
+  min-width: 14px;
   text-align: center;
 }
 
@@ -1053,14 +1048,14 @@ html, body {
 /* Rodapé com o Nome Centrado do Membro */
 .limb-box-footer {
   text-align: center;
-  padding-top: 2px;
+  padding-top: 1px;
 }
 
 .limb-title-text {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 800;
   font-family: var(--font-serif);
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: #ffffff;
   display: block;
@@ -1069,7 +1064,7 @@ html, body {
 /* Barra de Estresse Visual no Card do Membro */
 .limb-meter {
   width: 100%;
-  height: 2.5px;
+  height: 2px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 1px;
   overflow: hidden;
