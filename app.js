@@ -2,6 +2,7 @@
  * OBLÍVIO RPG - Ficha de Persona Interativa
  * Gerenciador de Fichas Local (localStorage / Cache sem necessidade de banco de dados)
  * Sistema de regras, rolagens com Zona de Acerto, rastreamento corporal de estresse e inventário.
+ * Visual rico, interativo, com efeitos visuais e sonoros procedurais.
  */
 
 (function () {
@@ -21,7 +22,7 @@
       motivation: '',
       player: '',
       role: 'Quem Age',
-      avatar: 'assets/avatar-sigil.svg',
+      avatar: 'assets/default-avatar.svg',
       ap: 0,
       ev: 0,
       initialAbility: null,
@@ -63,11 +64,14 @@
     activeSheetId: null,
     history: [],
     selectedDiceType: 20,
-    saveDebounceTimer: null
+    saveDebounceTimer: null,
+    cinematicTimer: null,
+    diceRollInterval: null
   };
 
-  // --- Inicialização e Carregamento do Cache Local ---
+  // --- Inicialização da Aplicação ---
   function initApp() {
+    initParticlesBackground();
     loadSoundPref();
     loadRollHistory();
     loadSheetsFromStorage();
@@ -75,10 +79,71 @@
     renderAll();
   }
 
+  // --- Efeito de Partículas Etéreas de Fundo ---
+  function initParticlesBackground() {
+    const canvas = document.getElementById('bg-particles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const particleCount = Math.min(45, Math.floor(width / 35));
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 1.8 + 0.6,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -Math.random() * 0.45 - 0.15,
+        alpha: Math.random() * 0.45 + 0.15,
+        pulseSpeed: Math.random() * 0.02 + 0.005,
+        color: Math.random() > 0.4 ? '250, 204, 21' : '168, 85, 247' // Dourado ou Roxo arcano
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach(p => {
+        p.y += p.vy;
+        p.x += p.vx;
+        p.alpha += Math.sin(Date.now() * p.pulseSpeed) * 0.004;
+
+        if (p.y < -10) {
+          p.y = height + 10;
+          p.x = Math.random() * width;
+        }
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color}, ${Math.max(0.05, Math.min(0.6, p.alpha))})`;
+        ctx.shadowBlur = p.radius * 4;
+        ctx.shadowColor = `rgba(${p.color}, 0.8)`;
+        ctx.fill();
+      });
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // --- Preferências de Som ---
   function loadSoundPref() {
     const saved = localStorage.getItem(STORAGE_KEY_SOUND);
     if (saved !== null && window.soundFX) {
-      window.soundFX.muted = (saved === 'true');
+      window.soundFX.muted = saved === 'true';
       updateSoundIcon();
     }
   }
@@ -86,10 +151,11 @@
   function updateSoundIcon() {
     const icon = document.getElementById('sound-icon');
     if (icon && window.soundFX) {
-      icon.textContent = window.soundFX.muted ? '🔇' : '🔊';
+      icon.textContent = window.soundFX.muted ? 'SOM OFF' : 'SOM ON';
     }
   }
 
+  // --- Histórico de Rolagens ---
   function loadRollHistory() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_HISTORY);
@@ -107,6 +173,27 @@
     } catch (e) {}
   }
 
+  function addHistoryEntry(entry) {
+    const current = getActiveSheet();
+    const item = {
+      id: 'hist_' + Date.now(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      personaName: current ? current.name : 'Persona',
+      title: entry.title || 'Rolagem',
+      total: entry.total,
+      formula: entry.formula,
+      zonaText: entry.zonaText,
+      verdict: entry.verdict,
+      verdictColor: entry.verdictColor || '#ffffff',
+      typeClass: entry.typeClass || 'normal'
+    };
+
+    state.history.unshift(item);
+    if (state.history.length > 100) state.history.pop();
+    saveRollHistory();
+  }
+
+  // --- Carregamento e Persistência de Fichas ---
   function loadSheetsFromStorage() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_SHEETS);
@@ -123,54 +210,31 @@
       state.activeSheetId = defaultSheet.id;
       saveSheetsToStorage();
     } else {
-      // Limpeza de itens padrão iniciais legados nas fichas salvas
-      let migrated = false;
+      // Garantir compatibilidade e campos estruturais
       state.sheets.forEach(sheet => {
         if (!sheet) return;
-        if (Array.isArray(sheet.knowledge)) {
-          const prevLen = sheet.knowledge.length;
-          sheet.knowledge = sheet.knowledge.filter(k => k.id !== 'kn_1' && k.id !== 'kn_2' && k.name !== 'Sobrevivência Urbana' && k.name !== 'Ocultismo Proibido');
-          if (sheet.knowledge.length !== prevLen) migrated = true;
+        if (!sheet.avatar || sheet.avatar.startsWith('assets/avatar-') || sheet.avatar.endsWith('avatar-sigil.svg')) {
+          sheet.avatar = 'assets/default-avatar.svg';
         }
-        if (sheet.ap === 5) {
-          sheet.ap = 0;
-          migrated = true;
+        if (!sheet.stress) {
+          sheet.stress = {
+            armRight: { cur: 0, max: 0, checked: false },
+            armLeft: { cur: 0, max: 0, checked: false },
+            torso: { cur: 0, max: 0, checked: false },
+            legRight: { cur: 0, max: 0, checked: false },
+            legLeft: { cur: 0, max: 0, checked: false }
+          };
         }
-        if (Array.isArray(sheet.mazelas)) {
-          const prevLen = sheet.mazelas.length;
-          sheet.mazelas = sheet.mazelas.filter(m => m.id !== 'mz_1' && m.name !== 'Pesadelos Recorrentes');
-          if (sheet.mazelas.length !== prevLen) migrated = true;
+        if (!sheet.inventory) {
+          sheet.inventory = { carregados: [], guardados: [], slotsUsed: [false, false, false, false, false] };
         }
-        if (Array.isArray(sheet.abilities)) {
-          const prevLen = sheet.abilities.length;
-          sheet.abilities = sheet.abilities.filter(ab => ab.id !== 'ab_1' && ab.name !== 'Golpe Voraz');
-          if (sheet.abilities.length !== prevLen) migrated = true;
+        if (!Array.isArray(sheet.inventory.slotsUsed)) {
+          sheet.inventory.slotsUsed = [false, false, false, false, false];
         }
-        if (sheet.initialAbility && (sheet.initialAbility.name === 'Voracidade' || sheet.initialAbility.name === '(Nome da Habilidade)' || !sheet.initialAbility.name)) {
-          sheet.initialAbility = null;
-          migrated = true;
-        }
-        if (sheet.inventory) {
-          if (Array.isArray(sheet.inventory.carregados)) {
-            const prevLen = sheet.inventory.carregados.length;
-            sheet.inventory.carregados = sheet.inventory.carregados.filter(i => i.id !== 'inv_1' && i.id !== 'inv_2' && i.name !== 'Lâmina Serrilhada' && i.name !== 'Revólver Gasto');
-            if (sheet.inventory.carregados.length !== prevLen) migrated = true;
-          }
-          if (Array.isArray(sheet.inventory.guardados)) {
-            const prevLen = sheet.inventory.guardados.length;
-            sheet.inventory.guardados = sheet.inventory.guardados.filter(i => i.id !== 'inv_3' && i.id !== 'inv_4' && i.name !== 'Atadura Imunda' && i.name !== 'Giz de Osso');
-            if (sheet.inventory.guardados.length !== prevLen) {
-              migrated = true;
-              if (sheet.inventory.guardados.length === 0 && Array.isArray(sheet.inventory.slotsUsed)) {
-                sheet.inventory.slotsUsed = [false, false, false, false, false];
-              }
-            }
-          }
+        if (!sheet.attributes) {
+          sheet.attributes = { carne: 0, forca: 0, prontidao: 0, determinacao: 0, mente: 0, folego: 0, dano: 0, coragem: 0, protecao: 0, velocidade: 0 };
         }
       });
-      if (migrated) {
-        saveSheetsToStorage();
-      }
 
       const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE);
       if (activeId && state.sheets.some(s => s.id === activeId)) {
@@ -189,17 +253,15 @@
       }
       showSaveIndicator();
     } catch (e) {
-      console.error('Erro ao salvar no localStorage:', e);
+      console.error('Erro ao salvar ficha no localStorage:', e);
     }
   }
 
   function triggerAutoSave() {
-    if (state.saveDebounceTimer) {
-      clearTimeout(state.saveDebounceTimer);
-    }
+    clearTimeout(state.saveDebounceTimer);
     state.saveDebounceTimer = setTimeout(() => {
       saveSheetsToStorage();
-    }, 350);
+    }, 300);
   }
 
   function showSaveIndicator() {
@@ -208,10 +270,10 @@
     if (!statusText || !syncStatus) return;
 
     statusText.textContent = 'Salvo no cache ✓';
-    syncStatus.style.borderColor = 'rgba(34, 197, 94, 0.6)';
+    syncStatus.style.borderColor = 'rgba(250, 204, 21, 0.6)';
     setTimeout(() => {
       statusText.textContent = 'Salvo localmente';
-      syncStatus.style.borderColor = 'rgba(34, 197, 94, 0.25)';
+      syncStatus.style.borderColor = 'rgba(255, 255, 255, 0.08)';
     }, 1800);
   }
 
@@ -219,7 +281,7 @@
     return state.sheets.find(s => s.id === state.activeSheetId) || state.sheets[0];
   }
 
-  // --- Renderização Completa da Interface ---
+  // --- Renderização Completa ---
   function renderAll() {
     renderSheetSelector();
     renderPersona();
@@ -252,7 +314,7 @@
     });
   }
 
-  // --- Render: Persona ---
+  // --- Render: Persona & Avatar ---
   function renderPersona() {
     const s = getActiveSheet();
     const nameEl = document.getElementById('persona-name');
@@ -264,7 +326,7 @@
     if (nameEl) nameEl.value = s.name || '';
     if (motEl) motEl.value = s.motivation || '';
     if (playerEl) playerEl.value = s.player || '';
-    if (avatarEl && s.avatar) avatarEl.src = s.avatar;
+    if (avatarEl) avatarEl.src = s.avatar || 'assets/default-avatar.svg';
 
     if (roleEl) {
       let matched = false;
@@ -276,7 +338,6 @@
         }
       }
       if (!matched && s.role) {
-        // Papel personalizado
         let customOpt = roleEl.querySelector('option[data-custom="true"]');
         if (!customOpt) {
           customOpt = document.createElement('option');
@@ -326,7 +387,7 @@
     listEl.innerHTML = '';
 
     if (!s.abilities || s.abilities.length === 0) {
-      listEl.innerHTML = '<div style="color:#666; font-size:0.75rem; text-align:center; padding:8px;">Nenhuma habilidade adicionada ainda. Clique em + para criar.</div>';
+      listEl.innerHTML = '<div class="empty-state-notice">Nenhuma habilidade adicionada ainda. Clique em + para criar.</div>';
       return;
     }
 
@@ -337,7 +398,7 @@
         <div class="ability-header">
           <div>
             <span class="ability-name">${escapeHtml(ab.name)}</span>
-            <span class="ability-type" style="margin-left:4px;">${escapeHtml(ab.type || '')} ${ab.cost ? '• ' + escapeHtml(ab.cost) : ''}</span>
+            <span class="ability-type" style="margin-left:6px;">${escapeHtml(ab.type || '')} ${ab.cost ? '• ' + escapeHtml(ab.cost) : ''}</span>
           </div>
           <div class="ability-actions">
             <button class="btn-sm-action edit" data-id="${ab.id}" title="Editar">✎</button>
@@ -361,8 +422,19 @@
       const data = s.stress[limb] || { cur: 0, max: 0, checked: false };
       const curEl = document.getElementById(`val-${limb}-cur`);
       const maxEl = document.getElementById(`val-${limb}-max`);
+      const meterEl = document.getElementById(`meter-${limb}`);
+
       if (curEl) curEl.textContent = data.cur;
       if (maxEl) maxEl.textContent = data.max;
+
+      // Barra de Estresse visual
+      if (meterEl) {
+        let percent = 0;
+        if (data.checked) percent = 100;
+        else if (data.max > 0) percent = Math.min(100, Math.round((data.cur / data.max) * 100));
+        else if (data.cur > 0) percent = 100;
+        meterEl.style.width = percent + '%';
+      }
 
       // Checkbox
       const kebabName = limbToKebab(limb);
@@ -396,32 +468,32 @@
       ratio = 1;
     }
 
-    // Interpolação suave: de Branco (#ffffff) para Vermelho Sangue (#b91c1c) conforme atinge o máximo
-    const r = Math.round(255 - ratio * (255 - 185));
-    const g = Math.round(255 - ratio * (255 - 28));
-    const b = Math.round(255 - ratio * (255 - 28));
-    const fillColor = ratio === 0 ? '#ffffff' : `rgb(${r}, ${g}, ${b})`;
+    // Interpolação rica: De Cinza Prata (#cbd5e1) até Vermelho Sangue Rúnico (#ef4444)
+    const r = Math.round(203 + ratio * (239 - 203));
+    const g = Math.round(213 - ratio * (213 - 68));
+    const b = Math.round(225 - ratio * (225 - 68));
+    const fillColor = ratio === 0 ? '#cbd5e1' : `rgb(${r}, ${g}, ${b})`;
 
     limbGroups.forEach(group => {
       const path = group.querySelector('.limb-path');
       if (path) {
         path.style.fill = fillColor;
-        if (ratio >= 0.75) {
-          path.style.stroke = '#ff4d4d';
-          path.style.filter = `drop-shadow(0 0 ${Math.round(ratio * 5)}px rgba(255, 77, 77, 0.7))`;
+        if (ratio >= 0.75 || data.checked) {
+          path.style.stroke = '#ffffff';
+          path.style.filter = `drop-shadow(0 0 ${Math.round(4 + ratio * 8)}px rgba(239, 68, 68, 0.85))`;
         } else if (ratio > 0.25) {
-          path.style.stroke = 'rgba(255, 77, 77, 0.45)';
-          path.style.filter = 'none';
+          path.style.stroke = 'rgba(239, 68, 68, 0.6)';
+          path.style.filter = 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.4))';
         } else {
-          path.style.stroke = '#1a1a1a';
+          path.style.stroke = '#161722';
           path.style.filter = 'none';
         }
       }
 
       if (ratio >= 1 || data.checked) {
-        group.classList.add('damaged');
+        group.classList.add('critical-hit');
       } else {
-        group.classList.remove('damaged');
+        group.classList.remove('critical-hit');
       }
     });
   }
@@ -449,35 +521,142 @@
       btn.setAttribute('aria-checked', isTarget ? 'true' : 'false');
     });
 
+    const hintEl = document.getElementById('zona-dc-hint');
+    if (hintEl) {
+      if (zona === 'reduzida') hintEl.textContent = 'Dificuldade Atual: 10+ (Reduzida)';
+      else if (zona === 'aumentada') hintEl.textContent = 'Dificuldade Atual: 16+ (Aumentada)';
+      else hintEl.textContent = 'Dificuldade Atual: 13+ (Normal)';
+    }
+
     const diceZonaSelect = document.getElementById('dice-target-zona');
     if (diceZonaSelect) {
       diceZonaSelect.value = zona;
     }
   }
 
+  // --- Cálculo de Capacidade e Carga do Inventário ---
+  // Fórmula Obrigatória: 5 + maior entre Força e Carne
+  // Carga Total: soma dos pesos/burden de todos os itens (aumenta/diminui automaticamente)
+  function calculateInventoryMetrics(sheet) {
+    const s = sheet || getActiveSheet();
+    if (!s) return { currentWeight: 0, maxCapacity: 5, forca: 0, carne: 0, isOverencumbered: false, freeSlots: 5, overSlots: 0 };
+
+    const forca = Math.max(0, Number(s.attributes?.forca) || 0);
+    const carne = Math.max(0, Number(s.attributes?.carne) || 0);
+    const maxCapacity = 5 + Math.max(forca, carne);
+
+    let currentWeight = 0;
+    if (s.inventory) {
+      if (Array.isArray(s.inventory.carregados)) {
+        s.inventory.carregados.forEach(i => {
+          const b = Number(i.burden);
+          currentWeight += (!isNaN(b) && b >= 0) ? b : 1;
+        });
+      }
+      if (Array.isArray(s.inventory.guardados)) {
+        s.inventory.guardados.forEach(i => {
+          const b = Number(i.burden);
+          currentWeight += (!isNaN(b) && b >= 0) ? b : 1;
+        });
+      }
+    }
+
+    const isOverencumbered = currentWeight > maxCapacity;
+    return {
+      currentWeight,
+      maxCapacity,
+      forca,
+      carne,
+      isOverencumbered,
+      freeSlots: Math.max(0, maxCapacity - currentWeight),
+      overSlots: Math.max(0, currentWeight - maxCapacity)
+    };
+  }
+
   // --- Render: Inventário ---
   function renderInventory() {
     const s = getActiveSheet();
+    if (!s) return;
+
+    if (!s.inventory) {
+      s.inventory = { carregados: [], guardados: [] };
+    }
+    if (!Array.isArray(s.inventory.carregados)) s.inventory.carregados = [];
+    if (!Array.isArray(s.inventory.guardados)) s.inventory.guardados = [];
+
+    const metrics = calculateInventoryMetrics(s);
+
+    // Atualiza Painel de Capacidade
+    const totalEl = document.getElementById('inventory-weight-total');
+    const maxEl = document.getElementById('inventory-capacity-max');
+    const badgeEl = document.getElementById('inventory-encumbrance-badge');
+    const barEl = document.getElementById('inventory-capacity-bar');
+    const slotsBoxes = document.getElementById('slots-boxes');
+
+    if (totalEl) totalEl.textContent = metrics.currentWeight;
+    if (maxEl) maxEl.textContent = metrics.maxCapacity;
+
+    if (badgeEl) {
+      if (metrics.isOverencumbered) {
+        badgeEl.textContent = `SOBRECARREGADO (+${metrics.overSlots})`;
+        badgeEl.className = 'encumbrance-badge danger';
+      } else if (metrics.currentWeight === metrics.maxCapacity) {
+        badgeEl.textContent = 'Capacidade Cheia';
+        badgeEl.className = 'encumbrance-badge warning';
+      } else {
+        badgeEl.textContent = `${metrics.freeSlots} Livres`;
+        badgeEl.className = 'encumbrance-badge safe';
+      }
+    }
+
+    if (barEl) {
+      const pct = Math.min(100, Math.round((metrics.currentWeight / (metrics.maxCapacity || 1)) * 100));
+      barEl.style.width = `${pct}%`;
+      if (metrics.isOverencumbered) {
+        barEl.style.background = 'linear-gradient(90deg, #facc15 0%, #ef4444 100%)';
+      } else {
+        barEl.style.background = 'linear-gradient(90deg, #10b981 0%, #facc15 100%)';
+      }
+    }
+
+    // Render Caixas de Slots (1 caixa para cada ponto de capacidade máxima + caixas vermelhas se sobrecarregado)
+    if (slotsBoxes) {
+      slotsBoxes.innerHTML = '';
+      const totalBoxes = Math.max(metrics.maxCapacity, metrics.currentWeight);
+      for (let i = 0; i < totalBoxes; i++) {
+        const box = document.createElement('div');
+        const isFilled = i < metrics.currentWeight;
+        const isOver = i >= metrics.maxCapacity && isFilled;
+
+        box.className = 'slot-box' + (isFilled ? ' used' : '') + (isOver ? ' overencumbered' : '');
+        box.title = isOver 
+          ? `Espaço Excedente ${i + 1} (Sobrepeso)` 
+          : `Espaço ${i + 1} de ${metrics.maxCapacity}: ${isFilled ? 'Ocupado' : 'Livre'}`;
+        slotsBoxes.appendChild(box);
+      }
+    }
 
     // Carregados
     const tbodyCarregados = document.getElementById('tbody-carregados');
     if (tbodyCarregados) {
       tbodyCarregados.innerHTML = '';
-      if (!s.inventory.carregados || s.inventory.carregados.length === 0) {
-        tbodyCarregados.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666; padding:8px;">Nenhum item carregado.</td></tr>`;
+      if (s.inventory.carregados.length === 0) {
+        tbodyCarregados.innerHTML = `<tr><td colspan="6" class="empty-state-notice">Nenhum item carregado. Clique abaixo para adicionar armas ou itens prontos.</td></tr>`;
       } else {
         s.inventory.carregados.forEach(item => {
           const tr = document.createElement('tr');
+          const burdenVal = item.burden !== undefined ? item.burden : 1;
           tr.innerHTML = `
             <td><button class="btn-use-item" data-id="${item.id}" title="Usar item">USAR</button></td>
             <td><strong>${escapeHtml(item.name)}</strong></td>
             <td>
-              ${item.damage ? `<button class="btn-roll-dmg" data-dmg="${escapeHtml(item.damage)}" data-name="${escapeHtml(item.name)}" title="Rolar dano">${escapeHtml(item.damage)}</button>` : '-'}
+              ${item.damage ? `<button class="btn-roll-dmg" data-dmg="${escapeHtml(item.damage)}" data-name="${escapeHtml(item.name)}" title="Rolar dano da arma">${escapeHtml(item.damage)}</button>` : '-'}
             </td>
+            <td><span class="badge-burden" title="Carga / Peso">${escapeHtml(String(burdenVal))}</span></td>
             <td>${escapeHtml(item.stress || '0')}</td>
             <td>
-              <button class="btn-sm-action edit-item" data-id="${item.id}" data-cat="carregado" title="Editar">✎</button>
-              <button class="btn-sm-action delete-item" data-id="${item.id}" data-cat="carregado" title="Remover">✕</button>
+              <button class="btn-sm-action edit-item" data-id="${item.id}" data-cat="carregado" title="Editar item">✎</button>
+              <button class="btn-sm-action delete-item" data-id="${item.id}" data-cat="carregado" title="Remover item">✕</button>
             </td>
           `;
           tbodyCarregados.appendChild(tr);
@@ -485,37 +664,24 @@
       }
     }
 
-    // Slots Guardados
-    const slotsBoxes = document.getElementById('slots-boxes');
-    if (slotsBoxes) {
-      slotsBoxes.innerHTML = '';
-      const slots = s.inventory.slotsUsed || [false, false, false, false, false];
-      slots.forEach((used, idx) => {
-        const box = document.createElement('div');
-        box.className = 'slot-box' + (used ? ' used' : '');
-        box.dataset.index = idx;
-        box.title = `Espaço ${idx + 1}: ${used ? 'Ocupado' : 'Livre'}`;
-        slotsBoxes.appendChild(box);
-      });
-    }
-
     // Guardados
     const tbodyGuardados = document.getElementById('tbody-guardados');
     if (tbodyGuardados) {
       tbodyGuardados.innerHTML = '';
-      if (!s.inventory.guardados || s.inventory.guardados.length === 0) {
-        tbodyGuardados.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666; padding:8px;">Nenhum item guardado.</td></tr>`;
+      if (s.inventory.guardados.length === 0) {
+        tbodyGuardados.innerHTML = `<tr><td colspan="5" class="empty-state-notice">Nenhum item guardado na mochila.</td></tr>`;
       } else {
         s.inventory.guardados.forEach(item => {
           const tr = document.createElement('tr');
+          const burdenVal = item.burden !== undefined ? item.burden : 1;
           tr.innerHTML = `
-            <td><span class="badge-tag" style="background:#222; color:#ccc;">${escapeHtml(item.type || 'Geral')}</span></td>
+            <td><span class="badge-tag">${escapeHtml(item.type || 'Geral')}</span></td>
             <td><strong>${escapeHtml(item.name)}</strong></td>
-            <td>${escapeHtml(String(item.burden || 1))}</td>
+            <td><span class="badge-burden" title="Carga / Peso">${escapeHtml(String(burdenVal))}</span></td>
             <td>${escapeHtml(item.uses || '-')}</td>
             <td>
-              <button class="btn-sm-action edit-item" data-id="${item.id}" data-cat="guardado" title="Editar">✎</button>
-              <button class="btn-sm-action delete-item" data-id="${item.id}" data-cat="guardado" title="Remover">✕</button>
+              <button class="btn-sm-action edit-item" data-id="${item.id}" data-cat="guardado" title="Editar item">✎</button>
+              <button class="btn-sm-action delete-item" data-id="${item.id}" data-cat="guardado" title="Remover item">✕</button>
             </td>
           `;
           tbodyGuardados.appendChild(tr);
@@ -532,7 +698,7 @@
     listEl.innerHTML = '';
 
     if (!s.knowledge || s.knowledge.length === 0) {
-      listEl.innerHTML = '<div style="color:#666; font-size:0.75rem; text-align:center; padding:8px;">Nenhum conhecimento registrado. Clique em + para adicionar.</div>';
+      listEl.innerHTML = '<div class="empty-state-notice">Nenhum conhecimento registrado. Clique em + para adicionar saberes ou perícias.</div>';
       return;
     }
 
@@ -541,17 +707,17 @@
       item.className = 'knowledge-item';
       item.innerHTML = `
         <div class="knowledge-header">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button class="btn-attr-roll btn-roll-knowledge" data-attr="${kn.attr}" data-bonus="${kn.bonus || 0}" data-name="${escapeHtml(kn.name)}" title="Testar Conhecimento">
-              🎲 <strong>${escapeHtml(kn.name)}</strong>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="btn-attr-roll btn-roll-knowledge" data-attr="${kn.attr}" data-bonus="${kn.bonus || 0}" data-name="${escapeHtml(kn.name)}" title="Testar Conhecimento (1d20 + Atributo + Bônus)">
+              <strong>${escapeHtml(kn.name)}</strong>
             </button>
-            <span class="badge-tag badge-${kn.attr}">${(kn.attr || '').toUpperCase()} +${kn.bonus || 0}</span>
+            <span class="badge-tag badge-${kn.attr}">${(kn.attr || '').toUpperCase()} ${kn.bonus >= 0 ? '+' : ''}${kn.bonus || 0}</span>
           </div>
           <div class="ability-actions">
             <button class="btn-sm-action delete-knowledge" data-id="${kn.id}" title="Remover">✕</button>
           </div>
         </div>
-        ${kn.desc ? `<div class="ability-body" style="border:none; padding:0;">${escapeHtml(kn.desc)}</div>` : ''}
+        ${kn.desc ? `<div class="ability-body" style="border:none; padding:0; font-size:0.78rem;">${escapeHtml(kn.desc)}</div>` : ''}
       `;
       listEl.appendChild(item);
     });
@@ -565,7 +731,7 @@
     listEl.innerHTML = '';
 
     if (!s.mazelas || s.mazelas.length === 0) {
-      listEl.innerHTML = '<div style="color:#666; font-size:0.75rem; text-align:center; padding:8px;">Nenhuma mazela ou trauma registrado. A mente e corpo ainda resistem.</div>';
+      listEl.innerHTML = '<div class="empty-state-notice">Nenhuma mazela ou trauma registrado. A mente e corpo ainda resistem.</div>';
       return;
     }
 
@@ -574,10 +740,10 @@
       item.className = 'mazela-item';
       item.innerHTML = `
         <div class="mazela-header">
-          <div style="display:flex; align-items:center; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;">
             <span class="mazela-name">${escapeHtml(mz.name)}</span>
-            <span class="badge-tag badge-severity-${mz.severity}">${escapeHtml(mz.severity)}</span>
-            <span class="badge-tag" style="background:#222; color:#bbb;">${escapeHtml(mz.type || 'Geral')}</span>
+            <span class="badge-tag badge-severity-${mz.severity || 'Média'}">${escapeHtml(mz.severity || 'Média')}</span>
+            <span class="badge-tag">${escapeHtml(mz.type || 'Geral')}</span>
           </div>
           <div class="ability-actions">
             <button class="btn-sm-action delete-mazela" data-id="${mz.id}" title="Remover">✕</button>
@@ -600,81 +766,172 @@
     }
   }
 
-  // --- Render: Histórico Modal ---
+  // --- Render: Modal de Histórico ---
   function renderHistoryModal() {
-    const listEl = document.getElementById('history-log-list');
-    if (!listEl) return;
-    listEl.innerHTML = '';
+    const list = document.getElementById('history-log-list');
+    if (!list) return;
 
+    list.innerHTML = '';
     if (state.history.length === 0) {
-      listEl.innerHTML = '<div style="color:#666; font-size:0.8rem; text-align:center; padding:16px;">Nenhuma rolagem feita ainda.</div>';
+      list.innerHTML = '<div class="empty-state-notice">Nenhuma rolagem realizada ainda nesta sessão.</div>';
       return;
     }
 
-    state.history.forEach(log => {
-      const item = document.createElement('div');
-      item.className = `history-log-item hist-${log.typeClass || 'normal'}`;
-      item.innerHTML = `
+    state.history.forEach(h => {
+      const div = document.createElement('div');
+      div.className = `history-log-item hist-${h.typeClass || 'normal'}`;
+      div.innerHTML = `
         <div class="history-meta-row">
-          <span>${log.timestamp} • ${escapeHtml(log.personaName)}</span>
-          <span>${escapeHtml(log.zonaText || '')}</span>
+          <span>${escapeHtml(h.timestamp)} • ${escapeHtml(h.personaName)}</span>
+          <span>${escapeHtml(h.zonaText || '')}</span>
         </div>
         <div class="history-main-row">
-          <span class="history-title">${escapeHtml(log.title)}</span>
-          <span class="history-total">${escapeHtml(log.total)}</span>
+          <span class="history-title">${escapeHtml(h.title)}</span>
+          <span style="font-size:1.1rem; font-family:var(--font-serif); font-weight:900; color:${h.verdictColor || '#ffffff'};">${escapeHtml(String(h.total))}</span>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:#aaa;">
-          <span>${escapeHtml(log.formula)}</span>
-          <strong style="${log.verdictColor ? 'color:' + log.verdictColor : ''}">${escapeHtml(log.verdict || '')}</strong>
-        </div>
+        <div style="font-size:0.74rem; color:var(--text-muted); font-family:var(--font-mono);">${escapeHtml(h.formula || '')}</div>
+        <div style="font-size:0.8rem; font-weight:bold; color:${h.verdictColor || '#ffffff'};">${escapeHtml(h.verdict || '')}</div>
       `;
-      listEl.appendChild(item);
+      list.appendChild(div);
     });
   }
 
-  // --- Sistema de Regras: Testes com d20 e Zona de Acerto ---
-  function evaluateOblivioRoll(naturalD20, finalTotal, zona) {
-    // Regra oficial Oblívio:
-    // Natural 1 = Falha Extrema
-    // Natural 20 = Sucesso Extremo
+  // ==========================================================================
+  // SISTEMA DE REGRAS DE ROLAGEM DO OBLÍVIO RPG
+  // ==========================================================================
+  function evaluateOblivioRoll(naturalD20, finalTotal, zonaKey) {
     if (naturalD20 === 1) {
       return {
-        verdict: '💀 FALHA EXTREMA',
-        color: '#ff1744',
+        verdict: 'FALHA EXTREMA (Natural 1)',
+        color: '#ef4444',
         typeClass: 'falha-extrema'
       };
     }
     if (naturalD20 === 20) {
       return {
-        verdict: '🌟 SUCESSO EXTREMO',
-        color: '#ffd700',
+        verdict: 'SUCESSO EXTREMO (Natural 20)',
+        color: '#facc15',
         typeClass: 'sucesso-extremo'
       };
     }
 
-    // Limiares conforme a Zona de Acerto:
-    // Reduzida: 10+
-    // Normal: 13+
-    // Aumentada: 16+
     let threshold = 13;
-    if (zona === 'reduzida') threshold = 10;
-    if (zona === 'aumentada') threshold = 16;
+    if (zonaKey === 'reduzida') threshold = 10;
+    if (zonaKey === 'aumentada') threshold = 16;
 
     if (finalTotal >= threshold) {
       return {
-        verdict: '✓ SUCESSO REGULAR',
-        color: '#00e676',
+        verdict: `SUCESSO REGULAR (Meta: ${threshold}+)`,
+        color: '#10b981',
         typeClass: 'sucesso'
       };
     } else {
       return {
-        verdict: '✗ FALHA REGULAR',
-        color: '#ff7849',
+        verdict: `FALHA REGULAR (Meta: ${threshold}+)`,
+        color: '#f97316',
         typeClass: 'falha'
       };
     }
   }
 
+  // --- Efeito de Rolagem Cinemática ---
+  function triggerCinematicRoll({ title, total, formula, verdict, verdictColor, typeClass, die = 20, dieVal }) {
+    const stage = document.getElementById('cinematic-dice-stage');
+    const actor = document.getElementById('dice-3d-actor');
+    const burst = document.getElementById('dice-impact-burst');
+    const titleEl = document.getElementById('cinematic-title');
+    const totalEl = document.getElementById('cinematic-total');
+    const formulaEl = document.getElementById('cinematic-formula');
+    const verdictEl = document.getElementById('cinematic-verdict');
+    const actorValEl = document.getElementById('dice-actor-val');
+
+    if (!stage || !actor) {
+      // Fallback para toast
+      showDiceToast(`
+        <div style="font-family:var(--font-serif); font-size:0.8rem; color:#facc15;">${escapeHtml(title)}</div>
+        <div style="font-size:2.2rem; font-weight:900; line-height:1; margin:4px 0;">${total}</div>
+        <div style="font-size:0.75rem; color:#94a3b8;">${escapeHtml(formula)}</div>
+        <div style="font-size:0.9rem; font-weight:bold; margin-top:4px; color:${verdictColor}">${escapeHtml(verdict)}</div>
+      `);
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (totalEl) totalEl.textContent = total;
+    if (formulaEl) formulaEl.textContent = formula;
+    if (verdictEl) {
+      verdictEl.textContent = verdict;
+      verdictEl.style.color = verdictColor;
+    }
+
+    // Define o número final a ser estampado no centro da face do dado
+    const finalDieNumber = (dieVal !== undefined && dieVal !== null) ? dieVal : total;
+    const numStr = String(finalDieNumber);
+
+    if (actorValEl) {
+      // Ajusta tamanho da fonte dinamicamente conforme a quantidade de dígitos
+      if (numStr.length >= 3) {
+        actorValEl.setAttribute('font-size', '15');
+      } else if (numStr.length === 2) {
+        actorValEl.setAttribute('font-size', '19');
+      } else {
+        actorValEl.setAttribute('font-size', '22');
+      }
+
+      // Efeito de rolagem: gira números aleatórios no dado durante a rotação
+      clearInterval(state.diceRollInterval);
+      const maxRange = (typeof die === 'number' && die > 1) ? die : 20;
+      actorValEl.style.fill = '#ffffff';
+
+      state.diceRollInterval = setInterval(() => {
+        const rand = Math.floor(Math.random() * maxRange) + 1;
+        actorValEl.textContent = rand;
+      }, 40);
+
+      // Ao aterrissar o dado, fixa o resultado exato da rolagem com cor do veredito
+      setTimeout(() => {
+        clearInterval(state.diceRollInterval);
+        actorValEl.textContent = numStr;
+        if (verdictColor) {
+          actorValEl.style.fill = verdictColor;
+        } else {
+          actorValEl.style.fill = '#ffffff';
+        }
+      }, 550);
+    }
+
+    clearTimeout(state.cinematicTimer);
+    stage.classList.add('active');
+    actor.classList.add('rolling');
+    if (burst) burst.classList.remove('burst');
+
+    setTimeout(() => {
+      actor.classList.remove('rolling');
+      if (burst) burst.classList.add('burst');
+    }, 600);
+
+    state.cinematicTimer = setTimeout(() => {
+      stage.classList.remove('active');
+      clearInterval(state.diceRollInterval);
+      if (actorValEl) actorValEl.style.fill = '#ffffff';
+    }, 2800);
+  }
+
+  // Toast flutuante rápido
+  function showDiceToast(htmlContent) {
+    const toast = document.getElementById('dice-toast');
+    const content = document.getElementById('toast-content');
+    if (!toast || !content) return;
+
+    content.innerHTML = htmlContent;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3200);
+  }
+
+  // Rolagem de Atributo
   function rollAttributeCheck(attrKey, attrDisplayName) {
     const s = getActiveSheet();
     const attrValue = Number(s.attributes[attrKey] || 0);
@@ -682,24 +939,25 @@
     const finalTotal = naturalD20 + attrValue;
     const evalResult = evaluateOblivioRoll(naturalD20, finalTotal, s.zona);
 
-    // Audio
-    if (window.soundFX) {
-      window.soundFX.playDiceRoll();
-      setTimeout(() => {
-        if (evalResult.typeClass === 'sucesso-extremo') window.soundFX.playSuccess();
+    if (window.soundFX) window.soundFX.playDiceRoll();
+
+    setTimeout(() => {
+      if (window.soundFX) {
+        if (evalResult.typeClass === 'sucesso-extremo' || evalResult.typeClass === 'sucesso') window.soundFX.playSuccess();
         else if (evalResult.typeClass === 'falha-extrema') window.soundFX.playFailure();
-      }, 250);
-    }
+      }
+    }, 450);
 
-    // Exibir Toast
-    showDiceToast(`
-      <div style="font-family:var(--font-serif); font-size:0.8rem; color:#d4af37;">TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})</div>
-      <div style="font-size:2rem; font-weight:900; line-height:1; margin:4px 0;">${finalTotal}</div>
-      <div style="font-size:0.75rem; color:#bbb;">Dado [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}</div>
-      <div style="font-size:0.88rem; font-weight:bold; margin-top:4px; color:${evalResult.color}">${evalResult.verdict}</div>
-    `);
+    triggerCinematicRoll({
+      title: `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`,
+      total: finalTotal,
+      formula: `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`,
+      verdict: evalResult.verdict,
+      verdictColor: evalResult.color,
+      typeClass: evalResult.typeClass,
+      die: 20
+    });
 
-    // Adicionar ao Histórico
     addHistoryEntry({
       title: `Teste de ${attrDisplayName}`,
       total: `${finalTotal}`,
@@ -711,33 +969,38 @@
     });
   }
 
-  function rollKnowledgeCheck(name, attrKey, bonus) {
+  // Rolagem de Conhecimento
+  function rollKnowledgeCheck(name, attrKey, bonusVal) {
     const s = getActiveSheet();
     const attrVal = Number(s.attributes[attrKey] || 0);
-    const totalMod = attrVal + Number(bonus || 0);
+    const bonus = Number(bonusVal || 0);
     const naturalD20 = Math.floor(Math.random() * 20) + 1;
-    const finalTotal = naturalD20 + totalMod;
+    const finalTotal = naturalD20 + attrVal + bonus;
     const evalResult = evaluateOblivioRoll(naturalD20, finalTotal, s.zona);
 
-    if (window.soundFX) {
-      window.soundFX.playDiceRoll();
-      setTimeout(() => {
-        if (evalResult.typeClass === 'sucesso-extremo') window.soundFX.playSuccess();
-        else if (evalResult.typeClass === 'falha-extrema') window.soundFX.playFailure();
-      }, 250);
-    }
+    if (window.soundFX) window.soundFX.playDiceRoll();
 
-    showDiceToast(`
-      <div style="font-family:var(--font-serif); font-size:0.8rem; color:#d4af37;">CONHECIMENTO: ${escapeHtml(name)}</div>
-      <div style="font-size:2rem; font-weight:900; line-height:1; margin:4px 0;">${finalTotal}</div>
-      <div style="font-size:0.75rem; color:#bbb;">1d20 [${naturalD20}] + ${attrKey.toUpperCase()}(${attrVal}) + Bônus(${bonus})</div>
-      <div style="font-size:0.88rem; font-weight:bold; margin-top:4px; color:${evalResult.color}">${evalResult.verdict}</div>
-    `);
+    setTimeout(() => {
+      if (window.soundFX) {
+        if (evalResult.typeClass === 'sucesso-extremo' || evalResult.typeClass === 'sucesso') window.soundFX.playSuccess();
+        else if (evalResult.typeClass === 'falha-extrema') window.soundFX.playFailure();
+      }
+    }, 450);
+
+    triggerCinematicRoll({
+      title: `CONHECIMENTO: ${name}`,
+      total: finalTotal,
+      formula: `1d20 [${naturalD20}] + ${attrKey.toUpperCase()}(${attrVal}) + Bônus(${bonus})`,
+      verdict: evalResult.verdict,
+      verdictColor: evalResult.color,
+      typeClass: evalResult.typeClass,
+      die: 20
+    });
 
     addHistoryEntry({
-      title: `Conhecimento: ${name}`,
+      title: `Saber: ${name}`,
       total: `${finalTotal}`,
-      formula: `1d20 [${naturalD20}] + Mod(${totalMod}) = ${finalTotal}`,
+      formula: `1d20 [${naturalD20}] + ${attrKey.toUpperCase()}(${attrVal}) + Bônus(${bonus}) = ${finalTotal}`,
       zonaText: `Zona: ${s.zona.toUpperCase()}`,
       verdict: evalResult.verdict,
       verdictColor: evalResult.color,
@@ -745,83 +1008,76 @@
     });
   }
 
-  // --- Mecânica: Rolar Corpo (Local de Impacto) ---
+  // Rolagem de Local de Impacto Corporal
   function rollBodyHitLocation() {
-    // Rolagem d20 para partes do corpo em Oblívio:
-    // 1-4: Perna Direita
-    // 5-8: Perna Esquerda
-    // 9-14: Torso (Cabeça e Tronco)
-    // 15-17: Braço Direito
-    // 18-20: Braço Esquerdo
     const roll = Math.floor(Math.random() * 20) + 1;
-    let limbKey = 'torso';
+    let limbKebab = 'torso';
     let limbName = 'Torso';
 
     if (roll >= 1 && roll <= 4) {
-      limbKey = 'legRight';
+      limbKebab = 'leg-right';
       limbName = 'Perna Direita';
     } else if (roll >= 5 && roll <= 8) {
-      limbKey = 'legLeft';
+      limbKebab = 'leg-left';
       limbName = 'Perna Esquerda';
-    } else if (roll >= 9 && roll <= 14) {
-      limbKey = 'torso';
+    } else if (roll >= 9 && roll <= 12) {
+      limbKebab = 'torso';
       limbName = 'Torso';
-    } else if (roll >= 15 && roll <= 17) {
-      limbKey = 'armRight';
+    } else if (roll >= 13 && roll <= 16) {
+      limbKebab = 'arm-right';
       limbName = 'Braço Direito';
     } else {
-      limbKey = 'armLeft';
+      limbKebab = 'arm-left';
       limbName = 'Braço Esquerdo';
     }
 
     if (window.soundFX) {
       window.soundFX.playDiceRoll();
-      setTimeout(() => window.soundFX.playHit(), 200);
+      setTimeout(() => window.soundFX.playHit(), 300);
     }
 
-    // Animação e destaque no SVG
-    const kebabLimb = limbToKebab(limbKey);
-    const hitElements = document.querySelectorAll(`.body-limb[data-limb="${kebabLimb}"]`);
-    hitElements.forEach(el => {
-      el.classList.add('critical-hit');
-      setTimeout(() => {
-        el.classList.remove('critical-hit');
-      }, 2000);
-    });
+    // Feedback visual no SVG
+    document.querySelectorAll('.body-limb').forEach(el => el.classList.remove('critical-hit'));
+    const targetLimb = document.getElementById(`svg-limb-${limbKebab}`);
+    if (targetLimb) {
+      targetLimb.classList.add('critical-hit');
+      setTimeout(() => targetLimb.classList.remove('critical-hit'), 2200);
+    }
 
-    // Feedback no painel
     const feedbackEl = document.getElementById('body-roll-feedback');
     if (feedbackEl) {
-      feedbackEl.innerHTML = `⚔️ Impacto: <strong>${limbName.toUpperCase()}</strong> (d20: ${roll})`;
+      feedbackEl.innerHTML = `<span style="color:#ef4444; font-weight:800;">IMPACTO: [d20: ${roll}] -> ${limbName.toUpperCase()}</span>`;
     }
 
-    showDiceToast(`
-      <div style="font-family:var(--font-serif); font-size:0.8rem; color:#ffd700;">ROLAGEM DE CORPO</div>
-      <div style="font-size:1.6rem; font-weight:900; line-height:1.2; margin:4px 0; color:#ff4d4d;">${limbName.toUpperCase()}</div>
-      <div style="font-size:0.75rem; color:#bbb;">Resultado no d20: [${roll}]</div>
-    `);
+    triggerCinematicRoll({
+      title: 'ROLAGEM DE IMPACTO CORPORAL',
+      total: limbName.toUpperCase(),
+      formula: `Resultado no d20: [${roll}]`,
+      verdict: `Região Atingida: ${limbName}`,
+      verdictColor: '#ef4444',
+      typeClass: 'sucesso',
+      die: 20,
+      dieVal: roll
+    });
 
     addHistoryEntry({
-      title: `Rolar Corpo: ${limbName}`,
+      title: 'Impacto Corporal',
       total: limbName,
-      formula: `Local de impacto atingido [d20: ${roll}]`,
+      formula: `d20 [${roll}] -> ${limbName}`,
       zonaText: 'Impacto Corporal',
       verdict: `Região: ${limbName}`,
-      verdictColor: '#ff4d4d',
+      verdictColor: '#ef4444',
       typeClass: 'sucesso'
     });
   }
 
-  // --- Mecânica: Rolar Dano de Arma ---
-  function rollDamageFormula(formula, itemName) {
-    if (!formula || formula === '-') return;
-
+  // Rolagem de Dano da Arma
+  function rollDamageFormula(formulaStr, itemName = 'Arma') {
+    if (!formulaStr || formulaStr === '-') return;
     try {
-      const match = formula.toLowerCase().replace(/\s+/g, '').match(/^(\d*)d(\d+)([+-]\d+)?$/);
-      if (!match) {
-        alert('Fórmula de dano inválida. Use ex: 1d6, 1d8+2, 2d6-1');
-        return;
-      }
+      const clean = formulaStr.toLowerCase().replace(/\s+/g, '');
+      const match = clean.match(/^(\d*)d(\d+)([+-]\d+)?$/);
+      if (!match) return;
 
       const count = match[1] ? parseInt(match[1], 10) : 1;
       const sides = parseInt(match[2], 10);
@@ -836,66 +1092,37 @@
       }
       const total = sum + mod;
 
-      if (window.soundFX) window.soundFX.playDiceRoll();
+      if (window.soundFX) {
+        window.soundFX.playDiceRoll();
+        setTimeout(() => window.soundFX.playHit(), 250);
+      }
 
-      showDiceToast(`
-        <div style="font-family:var(--font-serif); font-size:0.8rem; color:#ff7849;">DANO: ${escapeHtml(itemName)}</div>
-        <div style="font-size:2.2rem; font-weight:900; line-height:1; margin:4px 0; color:#ff6e40;">${total}</div>
-        <div style="font-size:0.75rem; color:#bbb;">${count}d${sides} [${rolls.join(', ')}] ${mod !== 0 ? (mod > 0 ? '+' + mod : mod) : ''}</div>
-      `);
+      triggerCinematicRoll({
+        title: `DANO: ${itemName}`,
+        total: `${total}`,
+        formula: `${count}d${sides} [${rolls.join(', ')}] ${mod !== 0 ? (mod > 0 ? '+' + mod : mod) : ''}`,
+        verdict: `${total} Pontos de Dano`,
+        verdictColor: '#f97316',
+        typeClass: 'sucesso',
+        die: sides
+      });
 
       addHistoryEntry({
         title: `Dano: ${itemName}`,
         total: `${total}`,
         formula: `${count}d${sides} [${rolls.join('+')}] ${mod !== 0 ? (mod > 0 ? '+' + mod : mod) : ''} = ${total}`,
-        zonaText: 'Rolagem de Dano',
+        zonaText: 'Dano de Combate',
         verdict: `${total} de Dano`,
-        verdictColor: '#ff6e40',
+        verdictColor: '#f97316',
         typeClass: 'sucesso'
       });
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   }
 
-  // --- Toast de Rolagem ---
-  function showDiceToast(htmlContent) {
-    const toast = document.getElementById('dice-toast');
-    const content = document.getElementById('toast-content');
-    if (!toast || !content) return;
-
-    content.innerHTML = htmlContent;
-    toast.classList.add('show');
-
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2800);
-  }
-
-  // --- Histórico de Rolagens ---
-  function addHistoryEntry(entry) {
-    const s = getActiveSheet();
-    const now = new Date();
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-
-    const newLog = {
-      id: 'log_' + Date.now(),
-      timestamp: timeStr,
-      personaName: s.name || 'Persona',
-      ...entry
-    };
-
-    state.history.unshift(newLog);
-    if (state.history.length > 80) state.history.pop();
-    saveRollHistory();
-    renderHistoryModal();
-  }
-
-  // --- Rolador Livre de Dados (Modal) ---
+  // Rolagem Livre de Dados
   function executeFreeDiceRoll() {
-    const count = Math.max(1, parseInt(document.getElementById('dice-count').value, 10) || 1);
     const die = state.selectedDiceType || 20;
+    const count = parseInt(document.getElementById('dice-count').value, 10) || 1;
     const mod = parseInt(document.getElementById('dice-mod').value, 10) || 0;
     const targetZona = document.getElementById('dice-target-zona').value;
 
@@ -992,7 +1219,9 @@
     }
   }
 
-  // --- Handlers de Eventos ---
+  // ==========================================================================
+  // CONFIGURAÇÃO DOS EVENT LISTENERS
+  // ==========================================================================
   function setupEventListeners() {
     
     // --- Troca e Criação de Fichas ---
@@ -1002,6 +1231,7 @@
         state.activeSheetId = e.target.value;
         saveSheetsToStorage();
         renderAll();
+        if (window.soundFX) window.soundFX.playWhoosh();
       });
     }
 
@@ -1015,6 +1245,7 @@
           state.activeSheetId = newSheet.id;
           saveSheetsToStorage();
           renderAll();
+          if (window.soundFX) window.soundFX.playSuccess();
         }
       });
     }
@@ -1030,6 +1261,7 @@
         state.activeSheetId = clone.id;
         saveSheetsToStorage();
         renderAll();
+        if (window.soundFX) window.soundFX.playSuccess();
       });
     }
 
@@ -1065,6 +1297,7 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        if (window.soundFX) window.soundFX.playClick();
       });
     }
 
@@ -1088,6 +1321,7 @@
             saveSheetsToStorage();
             renderAll();
             alert(`Ficha "${imported.name}" importada com sucesso!`);
+            if (window.soundFX) window.soundFX.playSuccess();
           } catch (err) {
             alert('Erro ao carregar o arquivo JSON. Certifique-se de que é uma ficha válida do Oblívio.');
           }
@@ -1106,6 +1340,109 @@
           localStorage.setItem(STORAGE_KEY_SOUND, isMuted ? 'true' : 'false');
           updateSoundIcon();
         }
+      });
+    }
+
+    // --- Avatar Selector Trigger & Modal ---
+    const avatarTrigger = document.getElementById('avatar-trigger');
+    if (avatarTrigger) {
+      avatarTrigger.addEventListener('click', () => {
+        const s = getActiveSheet();
+        const previewEl = document.getElementById('avatar-modal-preview');
+        if (previewEl) previewEl.src = s.avatar || 'assets/default-avatar.svg';
+        openModal('modal-avatar');
+      });
+    }
+
+    // Dropzone de Envio de Arquivo do Computador / Celular
+    const avatarDropzone = document.getElementById('avatar-dropzone');
+    const avatarFileInput = document.getElementById('avatar-file-input');
+
+    function processAvatarFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const s = getActiveSheet();
+        s.avatar = ev.target.result;
+        renderPersona();
+        const previewEl = document.getElementById('avatar-modal-preview');
+        if (previewEl) previewEl.src = s.avatar;
+        triggerAutoSave();
+        closeModal('modal-avatar');
+        if (window.soundFX) window.soundFX.playSuccess();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (avatarDropzone && avatarFileInput) {
+      avatarDropzone.addEventListener('click', () => {
+        avatarFileInput.click();
+      });
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        avatarDropzone.addEventListener(eventName, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          avatarDropzone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        avatarDropzone.addEventListener(eventName, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          avatarDropzone.classList.remove('dragover');
+        });
+      });
+
+      avatarDropzone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const file = dt && dt.files && dt.files[0];
+        if (file) {
+          processAvatarFile(file);
+        }
+      });
+
+      avatarFileInput.addEventListener('change', e => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          processAvatarFile(file);
+        }
+      });
+    }
+
+    // Carregar Avatar via Link (URL)
+    const btnApplyUrl = document.getElementById('btn-apply-avatar-url');
+    const customUrlInput = document.getElementById('custom-avatar-url');
+    if (btnApplyUrl && customUrlInput) {
+      btnApplyUrl.addEventListener('click', () => {
+        const url = customUrlInput.value.trim();
+        if (url) {
+          const s = getActiveSheet();
+          s.avatar = url;
+          renderPersona();
+          const previewEl = document.getElementById('avatar-modal-preview');
+          if (previewEl) previewEl.src = url;
+          triggerAutoSave();
+          closeModal('modal-avatar');
+          customUrlInput.value = '';
+          if (window.soundFX) window.soundFX.playSuccess();
+        }
+      });
+    }
+
+    // Remover Avatar / Restaurar Silhueta Padrão
+    const btnRemoveAvatar = document.getElementById('btn-remove-avatar');
+    if (btnRemoveAvatar) {
+      btnRemoveAvatar.addEventListener('click', () => {
+        const s = getActiveSheet();
+        s.avatar = 'assets/default-avatar.svg';
+        renderPersona();
+        const previewEl = document.getElementById('avatar-modal-preview');
+        if (previewEl) previewEl.src = 'assets/default-avatar.svg';
+        triggerAutoSave();
+        closeModal('modal-avatar');
+        if (window.soundFX) window.soundFX.playClick();
       });
     }
 
@@ -1265,7 +1602,6 @@
         const desc = document.getElementById('ability-desc-input').value.trim();
 
         if (id) {
-          // Editar
           const target = s.abilities.find(a => a.id === id);
           if (target) {
             target.name = name;
@@ -1274,7 +1610,6 @@
             target.desc = desc;
           }
         } else {
-          // Adicionar
           s.abilities.push({
             id: 'ab_' + Date.now(),
             name,
@@ -1345,8 +1680,6 @@
     limbs.forEach(limb => {
       const maxSpan = document.getElementById(`val-${limb}-max`);
       if (maxSpan) {
-        maxSpan.style.cursor = 'pointer';
-        maxSpan.title = 'Clique para alterar o Estresse Máximo desta região';
         maxSpan.addEventListener('click', () => {
           const s = getActiveSheet();
           const currentMax = s.stress[limb]?.max || 0;
@@ -1377,6 +1710,35 @@
 
         updateSilhouetteLimbState(limbKebab, s.stress[limbKey]);
         triggerAutoSave();
+        if (window.soundFX) window.soundFX.playClick();
+      });
+    });
+
+    // Hover e Clique Interativo sobre partes da Silhueta SVG
+    document.querySelectorAll('.body-limb').forEach(limbGroup => {
+      const limbKebab = limbGroup.dataset.limb;
+      limbGroup.addEventListener('mouseenter', () => {
+        const box = document.querySelector(`.limb-box[data-limb="${limbKebab}"]`);
+        if (box) box.style.borderColor = 'var(--accent-gold)';
+      });
+      limbGroup.addEventListener('mouseleave', () => {
+        const box = document.querySelector(`.limb-box[data-limb="${limbKebab}"]`);
+        if (box) box.style.borderColor = '';
+      });
+      limbGroup.addEventListener('click', () => {
+        // Incrementa estresse do membro clicado
+        let limbKey = 'torso';
+        if (limbKebab === 'arm-right') limbKey = 'armRight';
+        else if (limbKebab === 'arm-left') limbKey = 'armLeft';
+        else if (limbKebab === 'leg-right') limbKey = 'legRight';
+        else if (limbKebab === 'leg-left') limbKey = 'legLeft';
+
+        const s = getActiveSheet();
+        if (!s.stress[limbKey]) s.stress[limbKey] = { cur: 0, max: 0, checked: false };
+        s.stress[limbKey].cur++;
+        renderStress();
+        triggerAutoSave();
+        if (window.soundFX) window.soundFX.playHit();
       });
     });
 
@@ -1384,13 +1746,11 @@
     document.querySelectorAll('.limb-box').forEach(box => {
       box.addEventListener('mouseenter', () => {
         const limb = box.dataset.limb;
-        const svgLimb = document.getElementById(`svg-limb-${limb}`);
-        if (svgLimb) svgLimb.classList.add('highlight');
+        document.querySelectorAll(`.body-limb[data-limb="${limb}"]`).forEach(el => el.classList.add('highlight'));
       });
       box.addEventListener('mouseleave', () => {
         const limb = box.dataset.limb;
-        const svgLimb = document.getElementById(`svg-limb-${limb}`);
-        if (svgLimb) svgLimb.classList.remove('highlight');
+        document.querySelectorAll(`.body-limb[data-limb="${limb}"]`).forEach(el => el.classList.remove('highlight'));
       });
     });
 
@@ -1413,6 +1773,9 @@
 
         s.attributes[attr] = val;
         renderAttributes();
+        if (attr === 'carne' || attr === 'forca') {
+          renderInventory();
+        }
         triggerAutoSave();
         if (window.soundFX) window.soundFX.playClick();
       });
@@ -1452,26 +1815,9 @@
         btn.setAttribute('aria-selected', 'true');
         const activePane = document.getElementById(`tab-${targetTab}`);
         if (activePane) activePane.classList.add('active');
-        if (window.soundFX) window.soundFX.playClick();
+        if (window.soundFX) window.soundFX.playWhoosh();
       });
     });
-
-    // --- Inventário: Slots de Carga Guardados ---
-    const slotsBoxes = document.getElementById('slots-boxes');
-    if (slotsBoxes) {
-      slotsBoxes.addEventListener('click', e => {
-        const box = e.target.closest('.slot-box');
-        if (!box) return;
-        const idx = parseInt(box.dataset.index, 10);
-        const s = getActiveSheet();
-        if (!s.inventory.slotsUsed) s.inventory.slotsUsed = [false, false, false, false, false];
-
-        s.inventory.slotsUsed[idx] = !s.inventory.slotsUsed[idx];
-        renderInventory();
-        triggerAutoSave();
-        if (window.soundFX) window.soundFX.playClick();
-      });
-    }
 
     // --- Inventário: Itens Adicionar/Editar/Excluir/Usar ---
     const btnAddItem = document.getElementById('btn-add-item');
@@ -1481,6 +1827,9 @@
         document.getElementById('item-modal-title').textContent = 'ADICIONAR ITEM';
         document.getElementById('form-item').reset();
         document.getElementById('item-id').value = '';
+        document.getElementById('item-category').value = 'carregado';
+        const burdenInput = document.getElementById('item-burden');
+        if (burdenInput) burdenInput.value = '1';
       });
     }
 
@@ -1489,59 +1838,53 @@
       formItem.addEventListener('submit', e => {
         e.preventDefault();
         const s = getActiveSheet();
-        const id = document.getElementById('item-id').value;
+        const id = document.getElementById('item-id').value.trim();
         const cat = document.getElementById('item-category').value;
         const name = document.getElementById('item-name').value.trim();
         const type = document.getElementById('item-type').value.trim();
         const damage = document.getElementById('item-damage').value.trim();
         const stress = document.getElementById('item-stress').value.trim();
-        const burden = parseInt(document.getElementById('item-burden').value, 10) || 1;
+        const burdenInput = document.getElementById('item-burden').value;
+        const burden = Math.max(0, parseInt(burdenInput, 10) || 0);
         const uses = document.getElementById('item-uses').value.trim();
         const desc = document.getElementById('item-desc').value.trim();
 
+        if (!name) return;
+
+        if (!s.inventory) {
+          s.inventory = { carregados: [], guardados: [] };
+        }
+        if (!Array.isArray(s.inventory.carregados)) s.inventory.carregados = [];
+        if (!Array.isArray(s.inventory.guardados)) s.inventory.guardados = [];
+
+        // Se for edição, remove de onde quer que esteja para reinserir com os dados atualizados
+        if (id) {
+          s.inventory.carregados = s.inventory.carregados.filter(i => String(i.id).trim() !== id);
+          s.inventory.guardados = s.inventory.guardados.filter(i => String(i.id).trim() !== id);
+        }
+
+        const finalItem = {
+          id: id || ('inv_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)),
+          name,
+          category: cat,
+          type: type || (cat === 'carregado' ? 'Arma' : 'Geral'),
+          damage,
+          stress,
+          burden,
+          uses,
+          desc
+        };
+
         if (cat === 'carregado') {
-          if (id) {
-            const item = s.inventory.carregados.find(i => i.id === id);
-            if (item) {
-              item.name = name;
-              item.damage = damage;
-              item.stress = stress;
-              item.desc = desc;
-            }
-          } else {
-            s.inventory.carregados.push({
-              id: 'inv_' + Date.now(),
-              name,
-              damage,
-              stress,
-              desc
-            });
-          }
+          s.inventory.carregados.push(finalItem);
         } else {
-          if (id) {
-            const item = s.inventory.guardados.find(i => i.id === id);
-            if (item) {
-              item.name = name;
-              item.type = type;
-              item.burden = burden;
-              item.uses = uses;
-              item.desc = desc;
-            }
-          } else {
-            s.inventory.guardados.push({
-              id: 'inv_' + Date.now(),
-              type,
-              name,
-              burden,
-              uses,
-              desc
-            });
-          }
+          s.inventory.guardados.push(finalItem);
         }
 
         closeModal('modal-item');
         renderInventory();
         triggerAutoSave();
+        if (window.soundFX) window.soundFX.playSuccess();
       });
     }
 
@@ -1552,17 +1895,18 @@
       // Botão USAR item
       const useBtn = e.target.closest('.btn-use-item');
       if (useBtn) {
-        const id = useBtn.dataset.id;
-        const item = s.inventory.carregados.find(i => i.id === id);
+        const id = String(useBtn.dataset.id).trim();
+        const item = (s.inventory?.carregados || []).find(i => String(i.id).trim() === id) ||
+                     (s.inventory?.guardados || []).find(i => String(i.id).trim() === id);
         if (item) {
           if (item.damage && item.damage !== '-') {
             rollDamageFormula(item.damage, item.name);
           } else {
             if (window.soundFX) window.soundFX.playClick();
             showDiceToast(`
-              <div style="font-family:var(--font-serif); font-size:0.8rem; color:#aaa;">USO DE ITEM</div>
+              <div style="font-family:var(--font-serif); font-size:0.8rem; color:var(--accent-gold);">USO DE ITEM</div>
               <div style="font-size:1.4rem; font-weight:700; margin:4px 0;">${escapeHtml(item.name)}</div>
-              <div style="font-size:0.75rem; color:#bbb;">${escapeHtml(item.desc || 'Item utilizado.')}</div>
+              <div style="font-size:0.75rem; color:#cbd5e1;">${escapeHtml(item.desc || 'Item utilizado com sucesso.')}</div>
             `);
           }
         }
@@ -1579,22 +1923,29 @@
       // Botão Editar Item
       const editItemBtn = e.target.closest('.edit-item');
       if (editItemBtn) {
-        const id = editItemBtn.dataset.id;
-        const cat = editItemBtn.dataset.cat;
+        const id = String(editItemBtn.dataset.id).trim();
         let item = null;
-        if (cat === 'carregado') item = s.inventory.carregados.find(i => i.id === id);
-        else item = s.inventory.guardados.find(i => i.id === id);
+        let itemCat = 'carregado';
+
+        if (Array.isArray(s.inventory?.carregados)) {
+          item = s.inventory.carregados.find(i => String(i.id).trim() === id);
+          if (item) itemCat = 'carregado';
+        }
+        if (!item && Array.isArray(s.inventory?.guardados)) {
+          item = s.inventory.guardados.find(i => String(i.id).trim() === id);
+          if (item) itemCat = 'guardado';
+        }
 
         if (item) {
           openModal('modal-item');
           document.getElementById('item-modal-title').textContent = 'EDITAR ITEM';
           document.getElementById('item-id').value = item.id;
-          document.getElementById('item-category').value = cat;
-          document.getElementById('item-name').value = item.name;
+          document.getElementById('item-category').value = itemCat;
+          document.getElementById('item-name').value = item.name || '';
           document.getElementById('item-type').value = item.type || '';
           document.getElementById('item-damage').value = item.damage || '';
           document.getElementById('item-stress').value = item.stress || '';
-          document.getElementById('item-burden').value = item.burden || 1;
+          document.getElementById('item-burden').value = item.burden !== undefined ? item.burden : 1;
           document.getElementById('item-uses').value = item.uses || '';
           document.getElementById('item-desc').value = item.desc || '';
         }
@@ -1603,13 +1954,13 @@
       // Botão Deletar Item
       const delItemBtn = e.target.closest('.delete-item');
       if (delItemBtn) {
-        const id = delItemBtn.dataset.id;
-        const cat = delItemBtn.dataset.cat;
+        const id = String(delItemBtn.dataset.id).trim();
         if (confirm('Remover este item?')) {
-          if (cat === 'carregado') {
-            s.inventory.carregados = s.inventory.carregados.filter(i => i.id !== id);
-          } else {
-            s.inventory.guardados = s.inventory.guardados.filter(i => i.id !== id);
+          if (Array.isArray(s.inventory?.carregados)) {
+            s.inventory.carregados = s.inventory.carregados.filter(i => String(i.id).trim() !== id);
+          }
+          if (Array.isArray(s.inventory?.guardados)) {
+            s.inventory.guardados = s.inventory.guardados.filter(i => String(i.id).trim() !== id);
           }
           renderInventory();
           triggerAutoSave();
@@ -1678,6 +2029,7 @@
         closeModal('modal-knowledge');
         renderKnowledge();
         triggerAutoSave();
+        if (window.soundFX) window.soundFX.playSuccess();
       });
     }
 
@@ -1712,6 +2064,7 @@
         closeModal('modal-mazela');
         renderMazelas();
         triggerAutoSave();
+        if (window.soundFX) window.soundFX.playFailure();
       });
     }
 
@@ -1793,6 +2146,16 @@
       });
     }
 
+    // Fechar Cinematic Stage ao clicar
+    const cinematicStage = document.getElementById('cinematic-dice-stage');
+    if (cinematicStage) {
+      cinematicStage.addEventListener('click', () => {
+        cinematicStage.classList.remove('active');
+        clearTimeout(state.cinematicTimer);
+        clearInterval(state.diceRollInterval);
+      });
+    }
+
     // Fechar modais
     document.querySelectorAll('[data-close]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1812,6 +2175,11 @@
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+        if (cinematicStage) {
+          cinematicStage.classList.remove('active');
+          clearTimeout(state.cinematicTimer);
+          clearInterval(state.diceRollInterval);
+        }
       }
     });
   }
