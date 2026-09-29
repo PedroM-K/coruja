@@ -596,6 +596,9 @@
             <button type="button" class="tab-btn" data-tab="conhecimentos" role="tab" aria-selected="false">
               Conhecimentos
             </button>
+            <button type="button" class="tab-btn" data-tab="especializados" role="tab" aria-selected="false">
+              Especializados
+            </button>
             <button type="button" class="tab-btn" data-tab="mazelas" role="tab" aria-selected="false">
               Mazelas
             </button>
@@ -695,6 +698,20 @@
                 <button type="button" id="btn-add-knowledge" class="btn-sub-icon" title="Adicionar Conhecimento">+</button>
               </div>
               <div class="knowledge-list" id="knowledge-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- TAB 3: CONHECIMENTOS ESPECIALIZADOS -->
+            <div class="tab-pane" id="tab-especializados" role="tabpanel">
+              <div class="sub-header-bar sub-header-flex">
+                <div class="specialized-header-info">
+                  <span>CONHECIMENTOS ESPECIALIZADOS</span>
+                  <span class="badge-specialized-limit" id="specialized-limit-badge" title="Capacidade: 3 (Papel) + Metade do atributo Mente">3 / 3</span>
+                </div>
+                <button type="button" id="btn-add-specialized" class="btn-sub-icon" title="Adicionar Conhecimento Especializado">+</button>
+              </div>
+              <div class="specialized-list" id="specialized-list">
                 <!-- Dynamically populated -->
               </div>
             </div>
@@ -1033,6 +1050,52 @@
         <div class="modal-footer">
           <button type="button" class="btn-secondary" data-close="modal-knowledge">Cancelar</button>
           <button type="submit" class="btn-primary">Salvar Conhecimento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR CONHECIMENTO ESPECIALIZADO -->
+  <div class="modal-overlay" id="modal-specialized">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="specialized-modal-title">ADICIONAR CONHECIMENTO ESPECIALIZADO</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-specialized">✕</button>
+      </div>
+      <form id="form-specialized" class="modal-form">
+        <input type="hidden" id="specialized-id">
+        <div class="form-row">
+          <label for="specialized-name-input">Nome da Especialização</label>
+          <input type="text" id="specialized-name-input" placeholder="Ex: Sobrevivência nos Buracos, Medicina Forense, Armadilhas, Lábia" required>
+        </div>
+        <div class="form-row form-row-2col">
+          <div>
+            <label for="specialized-attr-input">Atributo Relacionado</label>
+            <select id="specialized-attr-input">
+              <option value="mente">MENTE</option>
+              <option value="prontidao">PRONTIDÃO</option>
+              <option value="determinacao">DETERMINAÇÃO</option>
+              <option value="forca">FORÇA</option>
+              <option value="carne">CARNE</option>
+              <option value="coragem">CORAGEM</option>
+              <option value="dano">DANO</option>
+              <option value="folego">FÔLEGO</option>
+              <option value="protecao">PROTEÇÃO</option>
+              <option value="velocidade">VELOCIDADE</option>
+            </select>
+          </div>
+          <div>
+            <label for="specialized-bonus-input">Bônus / Nível (+)</label>
+            <input type="number" id="specialized-bonus-input" value="1" min="-5" max="10">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="specialized-desc-input">Anotações / Descrição da Especialização</label>
+          <textarea id="specialized-desc-input" rows="2" placeholder="Gatilhos narrativos, efeitos práticos ou particularidades da especialização..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-specialized">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Especialização</button>
         </div>
       </form>
     </div>

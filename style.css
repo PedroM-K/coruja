@@ -1793,8 +1793,9 @@ html, body {
   transform: translateY(-1px);
 }
 
-/* Listas de Conhecimentos & Mazelas */
+/* Listas de Conhecimentos, Especializações & Mazelas */
 .knowledge-list,
+.specialized-list,
 .mazelas-list {
   padding: 12px 14px;
   display: flex;
@@ -1805,6 +1806,7 @@ html, body {
 }
 
 .knowledge-item,
+.specialized-item,
 .mazela-item {
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
@@ -1817,6 +1819,7 @@ html, body {
 }
 
 .knowledge-item:hover,
+.specialized-item:hover,
 .mazela-item:hover {
   border-color: var(--border-medium);
 }
@@ -1826,6 +1829,25 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.specialized-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge-specialized-limit {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent-gold);
+  background: rgba(250, 204, 21, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
 }
 
 .knowledge-name,
