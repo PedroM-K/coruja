@@ -573,15 +573,16 @@
   }
 
   // --- Cálculo de Capacidade e Carga do Inventário ---
-  // Fórmula Obrigatória: 5 + maior entre Força e Carne
+  // Regra Oficial: 5 + o seu atributo de Carne ou Força (ou 1, o que for maior)
   // Carga Total: soma dos pesos/burden de todos os itens (aumenta/diminui automaticamente)
   function calculateInventoryMetrics(sheet) {
     const s = sheet || getActiveSheet();
-    if (!s) return { currentWeight: 0, maxCapacity: 5, forca: 0, carne: 0, isOverencumbered: false, freeSlots: 5, overSlots: 0 };
+    if (!s) return { currentWeight: 0, maxCapacity: 6, forca: 0, carne: 0, isOverencumbered: false, freeSlots: 6, overSlots: 0 };
 
-    const forca = Math.max(0, Number(s.attributes?.forca) || 0);
-    const carne = Math.max(0, Number(s.attributes?.carne) || 0);
-    const maxCapacity = 5 + Math.max(forca, carne);
+    const forca = Number(s.attributes?.forca) || 0;
+    const carne = Number(s.attributes?.carne) || 0;
+    const attrBonus = Math.max(forca, carne, 1);
+    const maxCapacity = 5 + attrBonus;
 
     let currentWeight = 0;
     if (s.inventory) {
