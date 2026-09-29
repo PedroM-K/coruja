@@ -973,7 +973,9 @@
   function rollAttributeCheck(attrKey, attrDisplayName, isHalf = false) {
     const s = getActiveSheet();
     const rawVal = Number(s.attributes[attrKey] || 0);
-    const attrValue = isHalf ? Math.floor(rawVal / 2) : rawVal;
+    const fixedAttrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
+    const shouldUseHalf = isHalf || fixedAttrs.includes(attrKey);
+    const attrValue = shouldUseHalf ? Math.floor(rawVal / 2) : rawVal;
     const naturalD20 = Math.floor(Math.random() * 20) + 1;
     const finalTotal = naturalD20 + attrValue;
     const evalResult = evaluateOblivioRoll(naturalD20, finalTotal, s.zona);
@@ -987,8 +989,8 @@
       }
     }, 450);
 
-    const checkTitle = isHalf ? `TESTE DE ${attrDisplayName} (METADE)` : `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`;
-    const formulaText = isHalf ? `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue} (Metade de ${rawVal})` : `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`;
+    const checkTitle = `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`;
+    const formulaText = `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`;
 
     triggerCinematicRoll({
       title: checkTitle,
@@ -1001,7 +1003,7 @@
     });
 
     addHistoryEntry({
-      title: isHalf ? `Teste de ${attrDisplayName} (Metade)` : `Teste de ${attrDisplayName}`,
+      title: `Teste de ${attrDisplayName}`,
       total: `${finalTotal}`,
       formula: `${formulaText} = ${finalTotal}`,
       zonaText: `Zona: ${s.zona.toUpperCase()}`,
@@ -1847,7 +1849,9 @@
       btn.addEventListener('click', () => {
         const attr = btn.dataset.attr;
         const name = btn.dataset.name || attr.toUpperCase();
-        rollAttributeCheck(attr, name, false);
+        const fixedAttrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
+        const isFixed = fixedAttrs.includes(attr);
+        rollAttributeCheck(attr, name, isFixed);
       });
     });
 

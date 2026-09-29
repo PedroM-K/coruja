@@ -1153,62 +1153,42 @@ html, body {
 .attr-group-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  height: 28px;
   border-bottom: 1px solid var(--border-subtle);
   padding-bottom: 4px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
+  box-sizing: border-box;
 }
 
 .attr-group-title {
   font-family: var(--font-serif);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--accent-gold);
+  white-space: nowrap;
 }
 
-.attr-group-subtitle {
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Linha de Atributo Fixo (Nome + Stepper + Botão Metade) */
-.attribute-fixed-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  background: var(--bg-surface-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  padding: 5px 8px;
-  min-width: 0;
-  transition: all 0.15s ease;
-}
-
-.attribute-fixed-row:hover {
-  border-color: var(--accent-gold);
-  background: var(--bg-surface-2);
-  transform: translateX(2px);
-}
-
-/* Linha de Atributo Mutável (Modelo Anterior) */
+/* Linha de Atributo Fixo e Mutável (mesmas dimensões e alinhamento) */
+.attribute-fixed-row,
 .attribute-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  height: 42px;
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  padding: 5px 8px;
+  padding: 4px 8px;
   min-width: 0;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 }
 
+.attribute-fixed-row:hover,
 .attribute-row:hover {
   border-color: var(--accent-gold);
   background: var(--bg-surface-2);
@@ -1222,7 +1202,7 @@ html, body {
   font-family: var(--font-serif);
   font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   cursor: pointer;
   text-align: left;
@@ -1230,8 +1210,8 @@ html, body {
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 3px 5px;
+  text-overflow: clip;
+  padding: 4px 6px;
   border-radius: 4px;
   user-select: none;
   transition: all 0.15s ease;
@@ -1277,22 +1257,25 @@ html, body {
   font-family: var(--font-mono);
 }
 
-/* Botão de Rolagem com a Metade do Atributo (sem porcentagem) */
+/* Botão de Exibição/Rolagem com apenas o número da Metade */
 .btn-attr-half-roll {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  width: 32px;
+  min-width: 32px;
+  height: 28px;
   background: rgba(250, 204, 21, 0.08);
-  border: 1px solid rgba(250, 204, 21, 0.3);
+  border: 1px solid rgba(250, 204, 21, 0.35);
   color: var(--accent-gold);
-  padding: 3px 7px;
   border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: 0.95rem;
+  font-weight: 900;
   font-family: var(--font-mono);
   cursor: pointer;
   flex-shrink: 0;
   user-select: none;
+  padding: 0;
   transition: all 0.15s ease;
 }
 
@@ -1301,19 +1284,13 @@ html, body {
   color: #07070b;
   border-color: var(--accent-gold);
   box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
-  transform: scale(1.03);
-}
-
-.half-tag {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
+  transform: scale(1.05);
 }
 
 .half-val {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 900;
+  line-height: 1;
 }
 
 /* ==========================================================================
