@@ -39,7 +39,12 @@
         forca: 0,
         prontidao: 0,
         determinacao: 0,
-        mente: 0
+        mente: 0,
+        coragem: 0,
+        dano: 0,
+        folego: 0,
+        protecao: 0,
+        velocidade: 0
       },
       zona: 'normal', // 'reduzida' | 'normal' | 'aumentada'
       inventory: {
@@ -227,7 +232,23 @@
           sheet.inventory.slotsUsed = [false, false, false, false, false];
         }
         if (!sheet.attributes) {
-          sheet.attributes = { carne: 0, forca: 0, prontidao: 0, determinacao: 0, mente: 0 };
+          sheet.attributes = {
+            carne: 0,
+            forca: 0,
+            prontidao: 0,
+            determinacao: 0,
+            mente: 0,
+            coragem: 0,
+            dano: 0,
+            folego: 0,
+            protecao: 0,
+            velocidade: 0
+          };
+        } else {
+          const allAttrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente', 'coragem', 'dano', 'folego', 'protecao', 'velocidade'];
+          allAttrs.forEach(a => {
+            if (sheet.attributes[a] === undefined) sheet.attributes[a] = 0;
+          });
         }
       });
 
@@ -497,9 +518,13 @@
   // --- Render: Atributos & Metades ---
   function renderAttributes() {
     const s = getActiveSheet();
-    const attrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
+    if (!s || !s.attributes) return;
 
-    attrs.forEach(attr => {
+    const fixedAttrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
+    const mutableAttrs = ['coragem', 'dano', 'folego', 'protecao', 'velocidade'];
+
+    // Atributos Fixos (possuem valor e botão de Metade)
+    fixedAttrs.forEach(attr => {
       const fixedVal = Number(s.attributes[attr] ?? 0);
       const halfVal = Math.floor(fixedVal / 2);
 
@@ -511,6 +536,15 @@
       const halfEl = document.getElementById(`val-attr-${attr}-half`);
       if (halfEl) {
         halfEl.textContent = halfVal;
+      }
+    });
+
+    // Atributos Mutáveis (modelo anterior com stepper e rolagem)
+    mutableAttrs.forEach(attr => {
+      const mutVal = Number(s.attributes[attr] ?? 0);
+      const valEl = document.getElementById(`val-attr-${attr}`);
+      if (valEl) {
+        valEl.textContent = mutVal;
       }
     });
   }
@@ -953,8 +987,8 @@
       }
     }, 450);
 
-    const checkTitle = isHalf ? `TESTE DE ${attrDisplayName} (½ METADE)` : `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`;
-    const formulaText = isHalf ? `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue} (½ de ${rawVal})` : `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`;
+    const checkTitle = isHalf ? `TESTE DE ${attrDisplayName} (METADE)` : `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`;
+    const formulaText = isHalf ? `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue} (Metade de ${rawVal})` : `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`;
 
     triggerCinematicRoll({
       title: checkTitle,
