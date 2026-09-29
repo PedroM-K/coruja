@@ -53,7 +53,6 @@
         slotsUsed: [false, false, false, false, false]
       },
       knowledge: [],
-      specializedKnowledge: [],
       mazelas: [],
       notes: ''
     };
@@ -251,9 +250,6 @@
             if (sheet.attributes[a] === undefined) sheet.attributes[a] = 0;
           });
         }
-        if (!Array.isArray(sheet.specializedKnowledge)) {
-          sheet.specializedKnowledge = [];
-        }
       });
 
       const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE);
@@ -312,7 +308,6 @@
     renderZonaAcerto();
     renderInventory();
     renderKnowledge();
-    renderSpecializedKnowledge();
     renderMazelas();
     renderNotes();
     renderHistoryModal();
@@ -766,51 +761,6 @@
     });
   }
 
-  // --- Render: Conhecimentos Especializados ---
-  function renderSpecializedKnowledge() {
-    const s = getActiveSheet();
-    const listEl = document.getElementById('specialized-list');
-    const badgeEl = document.getElementById('specialized-limit-badge');
-
-    const mente = Number(s?.attributes?.mente || 0);
-    const halfMente = Math.floor(mente / 2);
-    const limit = 3 + halfMente;
-    const curCount = s?.specializedKnowledge?.length || 0;
-
-    if (badgeEl) {
-      badgeEl.textContent = `${curCount} / ${limit} (3 + Metade de Mente)`;
-    }
-
-    if (!listEl) return;
-    listEl.innerHTML = '';
-
-    if (!s.specializedKnowledge || s.specializedKnowledge.length === 0) {
-      listEl.innerHTML = '<div class="empty-state-notice">Nenhum conhecimento especializado registrado. Clique no botão <strong>+</strong> acima para adicionar suas especializações personalizadas.</div>';
-      return;
-    }
-
-    s.specializedKnowledge.forEach(sp => {
-      const item = document.createElement('div');
-      item.className = 'knowledge-item specialized-item';
-      item.innerHTML = `
-        <div class="knowledge-header">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <button class="btn-attr-roll btn-roll-specialized" data-attr="${sp.attr}" data-bonus="${sp.bonus || 0}" data-name="${escapeHtml(sp.name)}" title="Testar Especialização (1d20 + Atributo + Bônus)">
-              <strong>${escapeHtml(sp.name)}</strong>
-            </button>
-            <span class="badge-tag badge-${sp.attr}">${(sp.attr || '').toUpperCase()} ${sp.bonus >= 0 ? '+' : ''}${sp.bonus || 0}</span>
-          </div>
-          <div class="ability-actions">
-            <button class="btn-sm-action edit-specialized" data-id="${sp.id}" title="Editar">✎</button>
-            <button class="btn-sm-action delete-specialized" data-id="${sp.id}" title="Remover">✕</button>
-          </div>
-        </div>
-        ${sp.desc ? `<div class="ability-body" style="border:none; padding:0; font-size:0.78rem;">${escapeHtml(sp.desc)}</div>` : ''}
-      `;
-      listEl.appendChild(item);
-    });
-  }
-
   // --- Render: Mazelas ---
   function renderMazelas() {
     const s = getActiveSheet();
@@ -1095,50 +1045,6 @@
       title: `Saber: ${name}`,
       total: `${finalTotal}`,
       formula: `1d20 [${naturalD20}] + ${attrKey.toUpperCase()}(${attrVal}) + Bônus(${bonus}) = ${finalTotal}`,
-      zonaText: `Zona: ${s.zona.toUpperCase()}`,
-      verdict: evalResult.verdict,
-      verdictColor: evalResult.color,
-      typeClass: evalResult.typeClass
-    });
-  }
-
-  // Rolagem de Conhecimento Especializado
-  function rollSpecializedCheck(name, attrKey, bonusVal) {
-    const s = getActiveSheet();
-    const rawAttr = Number(s.attributes[attrKey] || 0);
-    const fixedAttrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
-    const attrVal = fixedAttrs.includes(attrKey) ? Math.floor(rawAttr / 2) : rawAttr;
-    const bonus = Number(bonusVal || 0);
-    const naturalD20 = Math.floor(Math.random() * 20) + 1;
-    const finalTotal = naturalD20 + attrVal + bonus;
-    const evalResult = evaluateOblivioRoll(naturalD20, finalTotal, s.zona);
-
-    if (window.soundFX) window.soundFX.playDiceRoll();
-
-    setTimeout(() => {
-      if (window.soundFX) {
-        if (evalResult.typeClass === 'sucesso-extremo' || evalResult.typeClass === 'sucesso') window.soundFX.playSuccess();
-        else if (evalResult.typeClass === 'falha-extrema') window.soundFX.playFailure();
-      }
-    }, 450);
-
-    const bonusStr = bonus !== 0 ? (bonus > 0 ? ` + ${bonus}` : ` - ${Math.abs(bonus)}`) : '';
-    const formulaText = `1d20 [${naturalD20}] + ${attrVal} (${attrKey.toUpperCase()})${bonusStr}`;
-
-    triggerCinematicRoll({
-      title: `ESPECIALIZAÇÃO: ${name.toUpperCase()}`,
-      total: finalTotal,
-      formula: formulaText,
-      verdict: evalResult.verdict,
-      verdictColor: evalResult.color,
-      typeClass: evalResult.typeClass,
-      die: 20
-    });
-
-    addHistoryEntry({
-      title: `Especialização: ${name}`,
-      total: `${finalTotal}`,
-      formula: `${formulaText} = ${finalTotal}`,
       zonaText: `Zona: ${s.zona.toUpperCase()}`,
       verdict: evalResult.verdict,
       verdictColor: evalResult.color,
@@ -1934,9 +1840,6 @@
         if (attr === 'carne' || attr === 'forca') {
           renderInventory();
         }
-        if (attr === 'mente') {
-          renderSpecializedKnowledge();
-        }
         triggerAutoSave();
         if (window.soundFX) window.soundFX.playClick();
       });
@@ -2201,94 +2104,6 @@
         renderKnowledge();
         triggerAutoSave();
         if (window.soundFX) window.soundFX.playSuccess();
-      });
-    }
-
-    // --- Conhecimentos Especializados: Event Listeners ---
-    const btnAddSpecialized = document.getElementById('btn-add-specialized');
-    if (btnAddSpecialized) {
-      btnAddSpecialized.addEventListener('click', () => {
-        openModal('modal-specialized');
-        document.getElementById('specialized-modal-title').textContent = 'ADICIONAR CONHECIMENTO ESPECIALIZADO';
-        document.getElementById('form-specialized').reset();
-        document.getElementById('specialized-id').value = '';
-        document.getElementById('specialized-bonus-input').value = '1';
-      });
-    }
-
-    const formSpecialized = document.getElementById('form-specialized');
-    if (formSpecialized) {
-      formSpecialized.addEventListener('submit', e => {
-        e.preventDefault();
-        const s = getActiveSheet();
-        const id = document.getElementById('specialized-id').value;
-        const name = document.getElementById('specialized-name-input').value.trim();
-        const attr = document.getElementById('specialized-attr-input').value;
-        const bonus = parseInt(document.getElementById('specialized-bonus-input').value, 10) || 0;
-        const desc = document.getElementById('specialized-desc-input').value.trim();
-
-        if (!name) return;
-        if (!Array.isArray(s.specializedKnowledge)) s.specializedKnowledge = [];
-
-        if (id) {
-          const existing = s.specializedKnowledge.find(k => k.id === id);
-          if (existing) {
-            existing.name = name;
-            existing.attr = attr;
-            existing.bonus = bonus;
-            existing.desc = desc;
-          }
-        } else {
-          s.specializedKnowledge.push({
-            id: 'sp_' + Date.now(),
-            name,
-            attr,
-            bonus,
-            desc
-          });
-        }
-
-        renderSpecializedKnowledge();
-        triggerAutoSave();
-        closeModal('modal-specialized');
-        if (window.soundFX) window.soundFX.playSuccess();
-      });
-    }
-
-    const specializedList = document.getElementById('specialized-list');
-    if (specializedList) {
-      specializedList.addEventListener('click', e => {
-        const s = getActiveSheet();
-        const rollBtn = e.target.closest('.btn-roll-specialized');
-        const editBtn = e.target.closest('.edit-specialized');
-        const delBtn = e.target.closest('.delete-specialized');
-
-        if (rollBtn) {
-          const attr = rollBtn.dataset.attr;
-          const bonus = parseInt(rollBtn.dataset.bonus, 10) || 0;
-          const name = rollBtn.dataset.name;
-          rollSpecializedCheck(name, attr, bonus);
-        } else if (editBtn) {
-          const id = editBtn.dataset.id;
-          const target = s.specializedKnowledge.find(k => k.id === id);
-          if (target) {
-            openModal('modal-specialized');
-            document.getElementById('specialized-modal-title').textContent = 'EDITAR CONHECIMENTO ESPECIALIZADO';
-            document.getElementById('specialized-id').value = target.id;
-            document.getElementById('specialized-name-input').value = target.name;
-            document.getElementById('specialized-attr-input').value = target.attr || 'mente';
-            document.getElementById('specialized-bonus-input').value = target.bonus || 1;
-            document.getElementById('specialized-desc-input').value = target.desc || '';
-          }
-        } else if (delBtn) {
-          const id = delBtn.dataset.id;
-          if (confirm('Remover este conhecimento especializado?')) {
-            s.specializedKnowledge = s.specializedKnowledge.filter(k => k.id !== id);
-            renderSpecializedKnowledge();
-            triggerAutoSave();
-            if (window.soundFX) window.soundFX.playClick();
-          }
-        }
       });
     }
 
