@@ -836,23 +836,24 @@ html, body {
 .mannequin-container {
   position: relative;
   width: 100%;
-  height: 380px;
+  height: 510px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 50%, rgba(20, 22, 35, 0.6) 0%, rgba(10, 11, 18, 0.95) 75%);
-  border: 1px solid var(--border-subtle);
+  background: radial-gradient(circle at 50% 50%, #f6f2e9 0%, #ebe4d6 70%, #ded5c3 100%);
+  border: 2px solid #23242e;
   border-radius: 8px;
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.22), 0 6px 20px rgba(0, 0, 0, 0.4);
   overflow: hidden;
 }
 
 .silhouette-wrapper {
-  width: 150px;
-  height: 350px;
+  width: 215px;
+  height: 470px;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.9));
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
   z-index: 1;
 }
 
@@ -862,9 +863,9 @@ html, body {
 }
 
 .limb-path {
-  fill: #e2e8f0;
-  stroke: #161722;
-  stroke-width: 1.2px;
+  fill: #000000;
+  stroke: #000000;
+  stroke-width: 0.6px;
   transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease, filter 0.3s ease;
   cursor: pointer;
 }
@@ -874,7 +875,7 @@ html, body {
 .body-limb.highlight .limb-path {
   fill: var(--accent-crimson) !important;
   stroke: #ffffff !important;
-  filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.9)) !important;
+  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.95)) !important;
 }
 
 .body-limb.critical-hit .limb-path {
@@ -882,144 +883,196 @@ html, body {
 }
 
 @keyframes pulseCritical {
-  0% { fill: #ef4444 !important; stroke: #fef08a !important; filter: drop-shadow(0 0 14px #ef4444) !important; }
-  100% { fill: #facc15 !important; stroke: #ffffff !important; filter: drop-shadow(0 0 24px #facc15) !important; }
+  0% { fill: #dc2626 !important; stroke: #fef08a !important; filter: drop-shadow(0 0 14px #dc2626) !important; }
+  100% { fill: #000000 !important; stroke: #ffffff !important; filter: drop-shadow(0 0 20px #dc2626) !important; }
 }
 
-/* Caixas de Membros Flutuantes ao Redor da Silhueta */
+/* Caixas Anatômicas Retangulares Estilo Dossiê Autópsia */
 .limb-box {
   position: absolute;
-  background: rgba(14, 15, 24, 0.92);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-medium);
-  padding: 6px 9px;
-  border-radius: 6px;
+  background: #fdfcfa;
+  border: 2px solid #0f1016;
+  border-radius: 3px;
+  padding: 5px 7px 4px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 114px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
-  z-index: 2;
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 2px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  z-index: 3;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .limb-box:hover {
-  border-color: var(--accent-gold);
-  transform: scale(1.03);
-  box-shadow: 0 0 14px rgba(250, 204, 21, 0.25);
+  border-color: #000000;
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
 }
 
 /* Posições Precisas dos Membros */
 .limb-box-torso {
-  top: 8px;
+  top: 92px;
   left: 50%;
   transform: translateX(-50%);
-  width: 125px;
+  width: 175px;
 }
 .limb-box-torso:hover {
-  transform: translateX(-50%) scale(1.03);
+  transform: translateX(-50%) scale(1.02);
 }
 
 .limb-box-arm-right {
-  top: 92px;
+  top: 152px;
   left: 10px;
+  width: 146px;
 }
 
 .limb-box-arm-left {
-  top: 92px;
+  top: 152px;
   right: 10px;
+  width: 146px;
 }
 
 .limb-box-leg-right {
-  bottom: 14px;
-  left: 10px;
+  bottom: 64px;
+  left: 14px;
+  width: 146px;
 }
 
 .limb-box-leg-left {
-  bottom: 14px;
-  right: 10px;
+  bottom: 64px;
+  right: 14px;
+  width: 146px;
 }
 
-.limb-check-title {
+/* Cabeçalho do Card: ATUAL | MÁXIMO */
+.limb-box-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  letter-spacing: 0.6px;
-  cursor: pointer;
+  padding: 0 2px;
 }
 
-.limb-check-title input[type="checkbox"] {
-  accent-color: var(--accent-crimson);
-  cursor: pointer;
+.limb-col-label {
+  font-size: 0.64rem;
+  font-weight: 900;
+  font-family: var(--font-serif);
+  color: #111111;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.limb-injury-chk {
   width: 13px;
   height: 13px;
+  accent-color: #dc2626;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
 }
 
-.limb-counter {
+.limb-injury-chk:hover, .limb-injury-chk:checked {
+  opacity: 1;
+}
+
+/* Corpo com Valores e Steppers */
+.limb-box-body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-recessed);
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 2px 4px;
+  background: #f2eee4;
+  border: 1px solid rgba(0, 0, 0, 0.22);
+  border-radius: 3px;
+  padding: 3px 4px;
+  margin: 1px 0;
 }
 
-.btn-limb-step {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  font-weight: bold;
+.limb-stepper-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+}
+
+.limb-box-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(0, 0, 0, 0.25);
+  margin: 0 3px;
+}
+
+.btn-limb-step, .btn-limb-max-step {
+  background: #e3ded2;
+  border: 1px solid rgba(0, 0, 0, 0.28);
+  color: #111111;
+  font-size: 0.82rem;
+  font-weight: 900;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0;
   line-height: 1;
-  transition: color 0.15s ease;
+  transition: all 0.1s ease;
 }
 
-.btn-limb-step:hover {
-  color: var(--accent-gold);
+.btn-limb-step:hover, .btn-limb-max-step:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
 }
 
-.limb-vals {
-  font-size: 0.85rem;
-  font-weight: 700;
+.limb-cur, .limb-max {
   font-family: var(--font-serif);
-  color: #ffffff;
-}
-
-.limb-cur {
-  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #000000;
+  min-width: 16px;
+  text-align: center;
 }
 
 .limb-max {
-  color: var(--text-muted);
   cursor: pointer;
-  border-bottom: 1px dotted var(--text-faint);
+  border-bottom: 1px dotted rgba(0, 0, 0, 0.45);
 }
 
 .limb-max:hover {
-  color: var(--accent-gold);
-  border-bottom-color: var(--accent-gold);
+  color: #b45309;
+  border-bottom-color: #b45309;
+}
+
+/* Rodapé com o Nome Centrado do Membro */
+.limb-box-footer {
+  text-align: center;
+  padding-top: 2px;
+}
+
+.limb-title-text {
+  font-size: 0.68rem;
+  font-weight: 900;
+  font-family: var(--font-serif);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #000000;
+  display: block;
 }
 
 /* Barra de Estresse Visual no Card do Membro */
 .limb-meter {
   width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
+  height: 2.5px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 1px;
   overflow: hidden;
+  margin-top: 1px;
 }
 
 .limb-meter-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #10b981 0%, #facc15 60%, #ef4444 100%);
+  background: linear-gradient(90deg, #10b981 0%, #f59e0b 60%, #dc2626 100%);
   transition: width 0.3s ease, background 0.3s ease;
 }
 
@@ -2551,22 +2604,47 @@ html, body {
 /* Ajustes Finos para Telas Pequenas e Celulares (< 540px) */
 @media (max-width: 540px) {
   .mannequin-container {
-    height: 350px;
+    height: 480px;
     max-width: 100%;
   }
   .silhouette-wrapper {
-    width: 110px;
-    height: 300px;
+    width: 175px;
+    height: 440px;
   }
   .limb-box {
-    width: 98px;
-    padding: 4px 6px;
+    padding: 4px 5px 3px;
   }
-  .limb-check-title {
-    font-size: 0.62rem;
+  .limb-box-torso {
+    width: 150px;
+    top: 80px;
   }
-  .limb-vals {
-    font-size: 0.76rem;
+  .limb-box-arm-right, .limb-box-arm-left {
+    width: 125px;
+    top: 135px;
+  }
+  .limb-box-leg-right, .limb-box-leg-left {
+    width: 125px;
+    bottom: 50px;
+  }
+  .limb-box-arm-right, .limb-box-leg-right {
+    left: 6px;
+  }
+  .limb-box-arm-left, .limb-box-leg-left {
+    right: 6px;
+  }
+  .btn-limb-step, .btn-limb-max-step {
+    width: 15px;
+    height: 15px;
+    font-size: 0.75rem;
+  }
+  .limb-cur, .limb-max {
+    font-size: 0.95rem;
+  }
+  .limb-col-label {
+    font-size: 0.58rem;
+  }
+  .limb-title-text {
+    font-size: 0.6rem;
   }
   .persona-identity-row {
     flex-direction: column;

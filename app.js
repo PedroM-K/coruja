@@ -468,11 +468,12 @@
       ratio = 1;
     }
 
-    // Interpolação rica: De Cinza Prata (#cbd5e1) até Vermelho Sangue Rúnico (#ef4444)
-    const r = Math.round(203 + ratio * (239 - 203));
-    const g = Math.round(213 - ratio * (213 - 68));
-    const b = Math.round(225 - ratio * (225 - 68));
-    const fillColor = ratio === 0 ? '#cbd5e1' : `rgb(${r}, ${g}, ${b})`;
+    // No estado normal: Preto Puro (#000000) exatamente como na ficha anatômica original
+    // Conforme o estresse aumenta ou se estiver com lesão, transiciona para Vermelho Sangue (#dc2626)
+    const r = Math.round(ratio * 220);
+    const g = Math.round(ratio * 38);
+    const b = Math.round(ratio * 38);
+    const fillColor = ratio === 0 ? '#000000' : `rgb(${r}, ${g}, ${b})`;
 
     limbGroups.forEach(group => {
       const path = group.querySelector('.limb-path');
@@ -480,12 +481,12 @@
         path.style.fill = fillColor;
         if (ratio >= 0.75 || data.checked) {
           path.style.stroke = '#ffffff';
-          path.style.filter = `drop-shadow(0 0 ${Math.round(4 + ratio * 8)}px rgba(239, 68, 68, 0.85))`;
+          path.style.filter = `drop-shadow(0 0 ${Math.round(4 + ratio * 8)}px rgba(220, 38, 38, 0.95))`;
         } else if (ratio > 0.25) {
-          path.style.stroke = 'rgba(239, 68, 68, 0.6)';
-          path.style.filter = 'drop-shadow(0 0 4px rgba(239, 68, 68, 0.4))';
+          path.style.stroke = 'rgba(220, 38, 38, 0.6)';
+          path.style.filter = 'drop-shadow(0 0 4px rgba(220, 38, 38, 0.4))';
         } else {
-          path.style.stroke = '#161722';
+          path.style.stroke = '#000000';
           path.style.filter = 'none';
         }
       }
@@ -1675,6 +1676,26 @@
       });
     });
 
+    // Stepper para Estresse Máximo (- / +)
+    document.querySelectorAll('.btn-limb-max-step').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const limb = btn.dataset.limb;
+        const op = btn.dataset.op;
+        const s = getActiveSheet();
+        if (!s.stress[limb]) s.stress[limb] = { cur: 0, max: 0, checked: false };
+
+        if (op === 'inc') {
+          s.stress[limb].max++;
+        } else if (op === 'dec' && s.stress[limb].max > 0) {
+          s.stress[limb].max--;
+        }
+
+        renderStress();
+        triggerAutoSave();
+        if (window.soundFX) window.soundFX.playClick();
+      });
+    });
+
     // Edição do Estresse Máximo ao clicar no valor máximo
     const limbs = ['armRight', 'armLeft', 'torso', 'legRight', 'legLeft'];
     limbs.forEach(limb => {
@@ -1694,8 +1715,8 @@
       }
     });
 
-    // Checkboxes dos Membros
-    document.querySelectorAll('.limb-check-title input[type="checkbox"]').forEach(chk => {
+    // Checkboxes dos Membros (Lesão / Crítico)
+    document.querySelectorAll('.limb-injury-chk, .limb-check-title input[type="checkbox"]').forEach(chk => {
       chk.addEventListener('change', () => {
         const s = getActiveSheet();
         const limbKebab = chk.id.replace('check-', '');

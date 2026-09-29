@@ -196,99 +196,139 @@
             <!-- Silhouette & Limb Tracker Stage -->
             <div class="mannequin-container" id="mannequin-stage">
               
-              <!-- Limb: Torso (Top Center) -->
+              <!-- Limb: Torso (Top Center / Chest) -->
               <div class="limb-box limb-box-torso" data-limb="torso">
-                <div class="limb-check-title">
-                  <input type="checkbox" id="check-torso" title="Marcar Torso como Crítico / Arriscado">
-                  <label for="check-torso">Torso</label>
+                <div class="limb-box-header">
+                  <span class="limb-col-label">ATUAL</span>
+                  <input type="checkbox" id="check-torso" class="limb-injury-chk" title="Marcar Torso como Crítico / Lesionado">
+                  <span class="limb-col-label">MÁXIMO</span>
                 </div>
-                <div class="limb-counter">
-                  <button type="button" class="btn-limb-step" data-limb="torso" data-op="dec" title="Reduzir Estresse">-</button>
-                  <span class="limb-vals" title="Clique no número máximo para editar">
-                    <span id="val-torso-cur" class="limb-cur">0</span> / <span id="val-torso-max" class="limb-max">0</span>
-                  </span>
-                  <button type="button" class="btn-limb-step" data-limb="torso" data-op="inc" title="Aumentar Estresse">+</button>
+                <div class="limb-box-body">
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-step" data-limb="torso" data-op="dec" title="Reduzir Estresse">-</button>
+                    <span id="val-torso-cur" class="limb-cur">0</span>
+                    <button type="button" class="btn-limb-step" data-limb="torso" data-op="inc" title="Aumentar Estresse">+</button>
+                  </div>
+                  <div class="limb-box-sep"></div>
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-max-step" data-limb="torso" data-op="dec" title="Reduzir Máximo">-</button>
+                    <span id="val-torso-max" class="limb-max" title="Clique para editar o Máximo">0</span>
+                    <button type="button" class="btn-limb-max-step" data-limb="torso" data-op="inc" title="Aumentar Máximo">+</button>
+                  </div>
                 </div>
                 <div class="limb-meter"><div class="limb-meter-fill" id="meter-torso"></div></div>
+                <div class="limb-box-footer">
+                  <span class="limb-title-text">TORSO</span>
+                </div>
               </div>
 
               <!-- Limb: Braço Direito (Viewer's Left) -->
               <div class="limb-box limb-box-arm-right" data-limb="arm-right">
-                <div class="limb-check-title">
-                  <input type="checkbox" id="check-arm-right" title="Marcar Braço Direito como Crítico / Arriscado">
-                  <label for="check-arm-right">Braço D.</label>
+                <div class="limb-box-header">
+                  <span class="limb-col-label">ATUAL</span>
+                  <input type="checkbox" id="check-arm-right" class="limb-injury-chk" title="Marcar Braço Direito como Crítico / Lesionado">
+                  <span class="limb-col-label">MÁXIMO</span>
                 </div>
-                <div class="limb-counter">
-                  <button type="button" class="btn-limb-step" data-limb="armRight" data-op="dec" title="Reduzir Estresse">-</button>
-                  <span class="limb-vals" title="Clique no número máximo para editar">
-                    <span id="val-armRight-cur" class="limb-cur">0</span> / <span id="val-armRight-max" class="limb-max">0</span>
-                  </span>
-                  <button type="button" class="btn-limb-step" data-limb="armRight" data-op="inc" title="Aumentar Estresse">+</button>
+                <div class="limb-box-body">
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-step" data-limb="armRight" data-op="dec" title="Reduzir Estresse">-</button>
+                    <span id="val-armRight-cur" class="limb-cur">0</span>
+                    <button type="button" class="btn-limb-step" data-limb="armRight" data-op="inc" title="Aumentar Estresse">+</button>
+                  </div>
+                  <div class="limb-box-sep"></div>
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-max-step" data-limb="armRight" data-op="dec" title="Reduzir Máximo">-</button>
+                    <span id="val-armRight-max" class="limb-max" title="Clique para editar o Máximo">0</span>
+                    <button type="button" class="btn-limb-max-step" data-limb="armRight" data-op="inc" title="Aumentar Máximo">+</button>
+                  </div>
                 </div>
                 <div class="limb-meter"><div class="limb-meter-fill" id="meter-armRight"></div></div>
+                <div class="limb-box-footer">
+                  <span class="limb-title-text">BRAÇO DIREITO</span>
+                </div>
               </div>
 
               <!-- Limb: Braço Esquerdo (Viewer's Right) -->
               <div class="limb-box limb-box-arm-left" data-limb="arm-left">
-                <div class="limb-check-title">
-                  <input type="checkbox" id="check-arm-left" title="Marcar Braço Esquerdo como Crítico / Arriscado">
-                  <label for="check-arm-left">Braço E.</label>
+                <div class="limb-box-header">
+                  <span class="limb-col-label">ATUAL</span>
+                  <input type="checkbox" id="check-arm-left" class="limb-injury-chk" title="Marcar Braço Esquerdo como Crítico / Lesionado">
+                  <span class="limb-col-label">MÁXIMO</span>
                 </div>
-                <div class="limb-counter">
-                  <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="dec" title="Reduzir Estresse">-</button>
-                  <span class="limb-vals" title="Clique no número máximo para editar">
-                    <span id="val-armLeft-cur" class="limb-cur">0</span> / <span id="val-armLeft-max" class="limb-max">0</span>
-                  </span>
-                  <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="inc" title="Aumentar Estresse">+</button>
+                <div class="limb-box-body">
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="dec" title="Reduzir Estresse">-</button>
+                    <span id="val-armLeft-cur" class="limb-cur">0</span>
+                    <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="inc" title="Aumentar Estresse">+</button>
+                  </div>
+                  <div class="limb-box-sep"></div>
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-max-step" data-limb="armLeft" data-op="dec" title="Reduzir Máximo">-</button>
+                    <span id="val-armLeft-max" class="limb-max" title="Clique para editar o Máximo">0</span>
+                    <button type="button" class="btn-limb-max-step" data-limb="armLeft" data-op="inc" title="Aumentar Máximo">+</button>
+                  </div>
                 </div>
                 <div class="limb-meter"><div class="limb-meter-fill" id="meter-armLeft"></div></div>
+                <div class="limb-box-footer">
+                  <span class="limb-title-text">BRAÇO ESQUERDO</span>
+                </div>
               </div>
 
               <!-- Limb: Perna Direita (Viewer's Left) -->
               <div class="limb-box limb-box-leg-right" data-limb="leg-right">
-                <div class="limb-check-title">
-                  <input type="checkbox" id="check-leg-right" title="Marcar Perna Direita como Crítica / Arriscada">
-                  <label for="check-leg-right">Perna D.</label>
+                <div class="limb-box-header">
+                  <span class="limb-col-label">ATUAL</span>
+                  <input type="checkbox" id="check-leg-right" class="limb-injury-chk" title="Marcar Perna Direita como Crítica / Lesionada">
+                  <span class="limb-col-label">MÁXIMO</span>
                 </div>
-                <div class="limb-counter">
-                  <button type="button" class="btn-limb-step" data-limb="legRight" data-op="dec" title="Reduzir Estresse">-</button>
-                  <span class="limb-vals" title="Clique no número máximo para editar">
-                    <span id="val-legRight-cur" class="limb-cur">0</span> / <span id="val-legRight-max" class="limb-max">0</span>
-                  </span>
-                  <button type="button" class="btn-limb-step" data-limb="legRight" data-op="inc" title="Aumentar Estresse">+</button>
+                <div class="limb-box-body">
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-step" data-limb="legRight" data-op="dec" title="Reduzir Estresse">-</button>
+                    <span id="val-legRight-cur" class="limb-cur">0</span>
+                    <button type="button" class="btn-limb-step" data-limb="legRight" data-op="inc" title="Aumentar Estresse">+</button>
+                  </div>
+                  <div class="limb-box-sep"></div>
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-max-step" data-limb="legRight" data-op="dec" title="Reduzir Máximo">-</button>
+                    <span id="val-legRight-max" class="limb-max" title="Clique para editar o Máximo">0</span>
+                    <button type="button" class="btn-limb-max-step" data-limb="legRight" data-op="inc" title="Aumentar Máximo">+</button>
+                  </div>
                 </div>
                 <div class="limb-meter"><div class="limb-meter-fill" id="meter-legRight"></div></div>
+                <div class="limb-box-footer">
+                  <span class="limb-title-text">PERNA DIREITA</span>
+                </div>
               </div>
 
               <!-- Limb: Perna Esquerda (Viewer's Right) -->
               <div class="limb-box limb-box-leg-left" data-limb="leg-left">
-                <div class="limb-check-title">
-                  <input type="checkbox" id="check-leg-left" title="Marcar Perna Esquerda como Crítica / Arriscada">
-                  <label for="check-leg-left">Perna E.</label>
+                <div class="limb-box-header">
+                  <span class="limb-col-label">ATUAL</span>
+                  <input type="checkbox" id="check-leg-left" class="limb-injury-chk" title="Marcar Perna Esquerda como Crítica / Lesionada">
+                  <span class="limb-col-label">MÁXIMO</span>
                 </div>
-                <div class="limb-counter">
-                  <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="dec" title="Reduzir Estresse">-</button>
-                  <span class="limb-vals" title="Clique no número máximo para editar">
-                    <span id="val-legLeft-cur" class="limb-cur">0</span> / <span id="val-legLeft-max" class="limb-max">0</span>
-                  </span>
-                  <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="inc" title="Aumentar Estresse">+</button>
+                <div class="limb-box-body">
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="dec" title="Reduzir Estresse">-</button>
+                    <span id="val-legLeft-cur" class="limb-cur">0</span>
+                    <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="inc" title="Aumentar Estresse">+</button>
+                  </div>
+                  <div class="limb-box-sep"></div>
+                  <div class="limb-stepper-col">
+                    <button type="button" class="btn-limb-max-step" data-limb="legLeft" data-op="dec" title="Reduzir Máximo">-</button>
+                    <span id="val-legLeft-max" class="limb-max" title="Clique para editar o Máximo">0</span>
+                    <button type="button" class="btn-limb-max-step" data-limb="legLeft" data-op="inc" title="Aumentar Máximo">+</button>
+                  </div>
                 </div>
                 <div class="limb-meter"><div class="limb-meter-fill" id="meter-legLeft"></div></div>
+                <div class="limb-box-footer">
+                  <span class="limb-title-text">PERNA ESQUERDA</span>
+                </div>
               </div>
 
-              <!-- SVG Silhouette Container with Rich Interactive Shading -->
+              <!-- SVG Silhouette Container with Rich Anatomical Silhouette -->
               <div class="silhouette-wrapper" id="silhouette-container">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 460" id="body-mannequin-svg" class="mannequin-svg">
-                  <defs>
-                    <radialGradient id="bodyBacklight" cx="50%" cy="45%" r="55%">
-                      <stop offset="0%" stop-color="rgba(120, 119, 198, 0.15)"/>
-                      <stop offset="70%" stop-color="rgba(239, 68, 68, 0.05)"/>
-                      <stop offset="100%" stop-color="transparent"/>
-                    </radialGradient>
-                  </defs>
-
-                  <ellipse cx="120" cy="220" rx="90" ry="190" fill="url(#bodyBacklight)" />
-
                   <!-- Head (part of Torso in Oblívio rules) -->
                   <g id="svg-limb-head" class="body-limb" data-limb="torso">
                     <path d="M 120 18 C 110 18, 103 26, 103 38 C 103 52, 110 63, 114 68 L 116 76 L 124 76 L 126 68 C 130 63, 137 52, 137 38 C 137 26, 130 18, 120 18 Z" class="limb-path" />
@@ -297,6 +337,8 @@
                   <g id="svg-limb-torso" class="body-limb" data-limb="torso">
                     <path d="M 116 76 C 112 78, 98 83, 90 92 C 86 97, 88 106, 89 122 C 90 138, 92 154, 91 170 C 90 182, 87 194, 88 206 C 89 214, 96 222, 108 226 L 120 230 L 132 226 C 144 222, 151 214, 152 206 C 153 194, 150 182, 149 170 C 148 154, 150 138, 151 122 C 152 106, 154 97, 150 92 C 142 83, 128 78, 124 76 Z" class="limb-path" />
                   </g>
+                  <!-- Pelvic anatomical outline contour -->
+                  <path d="M 94 224 L 120 246 L 146 224 M 120 246 L 120 264" stroke="#f4efe6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9" />
                   <!-- Braço Direito (Viewer's Left) -->
                   <g id="svg-limb-arm-right" class="body-limb" data-limb="arm-right">
                     <path d="M 88 94 C 82 96, 74 105, 71 116 C 68 128, 64 148, 60 168 C 57 182, 53 200, 48 214 C 45 221, 40 230, 36 238 L 34 246 L 38 248 C 42 242, 45 237, 49 231 L 47 243 L 50 244 C 53 238, 56 232, 58 225 C 62 212, 67 194, 71 176 C 75 158, 80 140, 83 128 C 85 120, 87 114, 88 106 Z" class="limb-path" />
