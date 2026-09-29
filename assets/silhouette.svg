@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 460" id="body-mannequin-svg" class="mannequin-svg">
+  <defs>
+    <filter id="limbGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Head / Cabeça (part of Torso/Upper Body in Oblívio) -->
+  <g id="svg-limb-head" class="body-limb" data-limb="torso">
+    <!-- Head -->
+    <path d="M 120 18 
+             C 110 18, 103 26, 103 38 
+             C 103 52, 110 63, 114 68 
+             L 116 76 L 124 76 L 126 68 
+             C 130 63, 137 52, 137 38 
+             C 137 26, 130 18, 120 18 Z" 
+          class="limb-path" />
+  </g>
+
+  <!-- Torso (Tronco) -->
+  <g id="svg-limb-torso" class="body-limb" data-limb="torso">
+    <path d="M 116 76
+             C 112 78, 98 83, 90 92
+             C 86 97, 88 106, 89 122
+             C 90 138, 92 154, 91 170
+             C 90 182, 87 194, 88 206
+             C 89 214, 96 222, 108 226
+             L 120 230
+             L 132 226
+             C 144 222, 151 214, 152 206
+             C 153 194, 150 182, 149 170
+             C 148 154, 150 138, 151 122
+             C 152 106, 154 97, 150 92
+             C 142 83, 128 78, 124 76
+             Z"
+          class="limb-path" />
+  </g>
+
+  <!-- Braço Direito (Viewer's Left) -->
+  <g id="svg-limb-arm-right" class="body-limb" data-limb="arm-right">
+    <!-- Shoulder, Upper arm, Forearm, Hand -->
+    <path d="M 88 94
+             C 82 96, 74 105, 71 116
+             C 68 128, 64 148, 60 168
+             C 57 182, 53 200, 48 214
+             C 45 221, 40 230, 36 238
+             L 34 246
+             L 38 248
+             C 42 242, 45 237, 49 231
+             L 47 243
+             L 50 244
+             C 53 238, 56 232, 58 225
+             C 62 212, 67 194, 71 176
+             C 75 158, 80 140, 83 128
+             C 85 120, 87 114, 88 106
+             Z"
+          class="limb-path" />
+  </g>
+
+  <!-- Braço Esquerdo (Viewer's Right) -->
+  <g id="svg-limb-arm-left" class="body-limb" data-limb="arm-left">
+    <!-- Shoulder, Upper arm, Forearm, Hand -->
+    <path d="M 152 94
+             C 158 96, 166 105, 169 116
+             C 172 128, 176 148, 180 168
+             C 183 182, 187 200, 192 214
+             C 195 221, 200 230, 204 238
+             L 206 246
+             L 202 248
+             C 198 242, 195 237, 191 231
+             L 193 243
+             L 190 244
+             C 187 238, 184 232, 182 225
+             C 178 212, 173 194, 169 176
+             C 165 158, 160 140, 157 128
+             C 155 120, 153 114, 152 106
+             Z"
+          class="limb-path" />
+  </g>
+
+  <!-- Perna Direita (Viewer's Left) -->
+  <g id="svg-limb-leg-right" class="body-limb" data-limb="leg-right">
+    <!-- Thigh, Knee, Calf, Foot -->
+    <path d="M 94 223
+             C 96 236, 97 254, 98 276
+             C 99 296, 99 316, 98 334
+             C 97 352, 95 374, 95 394
+             C 95 408, 93 420, 92 432
+             L 86 436
+             C 80 437, 72 437, 68 438
+             L 68 442
+             L 102 442
+             C 102 434, 103 422, 104 406
+             C 105 388, 107 366, 108 348
+             C 109 330, 110 310, 111 290
+             C 112 270, 114 250, 115 231
+             Z"
+          class="limb-path" />
+  </g>
+
+  <!-- Perna Esquerda (Viewer's Right) -->
+  <g id="svg-limb-leg-left" class="body-limb" data-limb="leg-left">
+    <!-- Thigh, Knee, Calf, Foot -->
+    <path d="M 146 223
+             C 144 236, 143 254, 142 276
+             C 141 296, 141 316, 142 334
+             C 143 352, 145 374, 145 394
+             C 145 408, 147 420, 148 432
+             L 154 436
+             C 160 437, 168 437, 172 438
+             L 172 442
+             L 138 442
+             C 138 434, 137 422, 136 406
+             C 135 388, 133 366, 132 348
+             C 131 330, 130 310, 129 290
+             C 128 270, 126 250, 125 231
+             Z"
+          class="limb-path" />
+  </g>
+</svg>

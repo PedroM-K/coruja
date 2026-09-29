@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oblívio RPG - Ficha Interativa</title>
+  <meta name="description" content="Ficha de personagem interativa para o sistema Oblívio RPG. Crie, gerencie e salve suas personas localmente no navegador sem necessidade de banco de dados.">
+  
+  <!-- Google Fonts: Gothic/Fraktur for headers, Cinzel for labels, Inter for clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=MedievalSharp&family=UnifrakturMaguntia&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Top System & Sheet Management Bar -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <span class="brand-sigil">🜏</span>
+        <h1 class="brand-title">OBLÍVIO RPG</h1>
+        <span class="system-badge">Ficha de Persona</span>
+      </div>
+
+      <!-- Sheet Switcher & Manager -->
+      <div class="sheet-manager">
+        <label for="sheet-select" class="sr-only">Selecionar Ficha</label>
+        <div class="select-container">
+          <select id="sheet-select" title="Escolher Persona"></select>
+        </div>
+        <button id="btn-new-sheet" class="btn-tool" title="Criar Nova Persona">
+          <span class="icon">+</span> Nova
+        </button>
+        <button id="btn-clone-sheet" class="btn-tool" title="Duplicar Persona Atual">
+          <span class="icon">⧉</span> Duplicar
+        </button>
+        <button id="btn-export-sheet" class="btn-tool" title="Exportar Ficha como JSON">
+          <span class="icon">📥</span> Exportar
+        </button>
+        <label for="import-file" class="btn-tool" title="Importar Ficha JSON">
+          <span class="icon">📤</span> Importar
+          <input type="file" id="import-file" accept=".json" style="display:none">
+        </label>
+        <button id="btn-delete-sheet" class="btn-tool btn-danger" title="Excluir Persona Atual">
+          <span class="icon">🗑️</span>
+        </button>
+        <button id="btn-toggle-sound" class="btn-tool" title="Ativar/Desativar Sons">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <div class="sync-status" id="sync-status" title="Salvo localmente no seu computador (persistente mesmo desligando)">
+          <span class="status-dot"></span> <span id="status-text">Salvo localmente</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Sheet Grid -->
+    <main class="sheet-container">
+      
+      <!-- ================= COLUNA 1: MINHA PERSONA & AÇÕES/HABILIDADES ================= -->
+      <section class="sheet-column column-left">
+        
+        <!-- CARD: MINHA PERSONA -->
+        <article class="card card-persona">
+          <div class="card-header-banner">
+            <h2 class="card-title">Minha Persona</h2>
+          </div>
+          
+          <div class="persona-content">
+            <!-- Persona Fields (2x2 Grid) -->
+            <div class="persona-fields-grid">
+              <div class="input-field-group">
+                <label for="persona-name">Nome</label>
+                <input type="text" id="persona-name" value="Nova persona" placeholder="Nome do personagem" autocomplete="off">
+              </div>
+
+              <div class="input-field-group">
+                <label for="persona-motivation">Motivação</label>
+                <input type="text" id="persona-motivation" placeholder="O que move você?" autocomplete="off">
+              </div>
+
+              <div class="input-field-group">
+                <label for="persona-player">Jogador</label>
+                <input type="text" id="persona-player" placeholder="Seu nome" autocomplete="off">
+              </div>
+
+              <div class="input-field-group">
+                <label for="persona-role">Papel</label>
+                <div class="role-input-wrap">
+                  <select id="persona-role" title="Escolha ou edite o Papel">
+                    <option value="Quem Age">Quem Age</option>
+                    <option value="Quem Cuida">Quem Cuida</option>
+                    <option value="Quem Resolve">Quem Resolve</option>
+                    <option value="Quem Sabe">Quem Sabe</option>
+                    <option value="Quem Protege">Quem Protege</option>
+                    <option value="custom">Outro (Personalizado)...</option>
+                  </select>
+                  <button id="btn-edit-role-custom" class="btn-field-icon" title="Editar Papel Personalizado">✎</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD: AÇÕES & HABILIDADES -->
+        <article class="card card-actions-abilities">
+          <div class="card-header-banner">
+            <h2 class="card-title">Ações & Habilidades</h2>
+          </div>
+
+          <!-- Section: Ações e Evoluções -->
+          <div class="sub-header-bar">
+            <span>✦ AÇÕES E EVOLUÇÕES</span>
+          </div>
+
+          <div class="actions-evolutions-grid">
+            <div class="counter-box">
+              <label for="persona-ap">Pontos de Ação</label>
+              <div class="stepper-input">
+                <button type="button" class="btn-step" data-target="persona-ap" data-op="dec">-</button>
+                <input type="number" id="persona-ap" value="5" min="0" max="99">
+                <button type="button" class="btn-step" data-target="persona-ap" data-op="inc">+</button>
+              </div>
+            </div>
+
+            <div class="counter-box">
+              <label for="persona-ev">Evoluções</label>
+              <div class="stepper-input">
+                <button type="button" class="btn-step" data-target="persona-ev" data-op="dec">-</button>
+                <input type="number" id="persona-ev" value="0" min="0" max="99">
+                <button type="button" class="btn-step" data-target="persona-ev" data-op="inc">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Habilidade Inicial -->
+          <div class="sub-header-bar sub-header-flex">
+            <span>✦ HABILIDADE INICIAL</span>
+            <button id="btn-edit-initial-ability" class="btn-sub-icon" title="Editar Habilidade Inicial">✎</button>
+          </div>
+
+          <div class="initial-ability-container">
+            <div class="ability-card-item initial-ability" id="initial-ability-display">
+              <div class="ability-title-row">
+                <span class="ability-name" id="initial-ability-name">Voracidade</span>
+                <span class="ability-type" id="initial-ability-type">(EFEITO PASSIVO)</span>
+                <button class="btn-toggle-ability" id="btn-toggle-initial-desc">▼</button>
+              </div>
+              <div class="ability-body" id="initial-ability-desc">
+                Ao consumir a carne ou essência de uma criatura derrotada ou sacrifício recente, regenere 1 ponto de Estresse em qualquer região do corpo.
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Habilidades Únicas e Gerais -->
+          <div class="sub-header-bar sub-header-flex">
+            <span>✦ HABILIDADES ÚNICAS E GERAIS</span>
+            <button id="btn-add-ability" class="btn-sub-icon" title="Adicionar Nova Habilidade">+</button>
+          </div>
+
+          <div class="abilities-list" id="abilities-list">
+            <!-- Dynamically populated -->
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ================= COLUNA 2: ESTRESSE & ATRIBUTOS ================= -->
+      <section class="sheet-column column-center">
+        
+        <!-- CARD: ESTRESSE -->
+        <article class="card card-stress">
+          <div class="card-header-banner">
+            <h2 class="card-title">Estresse</h2>
+          </div>
+
+          <div class="stress-layout">
+            
+            <!-- Silhouette & Limb Tracker -->
+            <div class="mannequin-container">
+              
+              <!-- Limb: Braço Direito (Viewer's Left) -->
+              <div class="limb-box limb-box-arm-right" data-limb="arm-right">
+                <div class="limb-check-title">
+                  <input type="checkbox" id="check-arm-right" title="Membro Atingido / Arriscado">
+                  <label for="check-arm-right">Braço Direito</label>
+                </div>
+                <div class="limb-counter">
+                  <button type="button" class="btn-limb-step" data-limb="armRight" data-op="dec">-</button>
+                  <span class="limb-vals"><span id="val-armRight-cur">0</span> / <span id="val-armRight-max">0</span></span>
+                  <button type="button" class="btn-limb-step" data-limb="armRight" data-op="inc">+</button>
+                </div>
+              </div>
+
+              <!-- Limb: Braço Esquerdo (Viewer's Right) -->
+              <div class="limb-box limb-box-arm-left" data-limb="arm-left">
+                <div class="limb-check-title">
+                  <input type="checkbox" id="check-arm-left" title="Membro Atingido / Arriscado">
+                  <label for="check-arm-left">Braço Esquerdo</label>
+                </div>
+                <div class="limb-counter">
+                  <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="dec">-</button>
+                  <span class="limb-vals"><span id="val-armLeft-cur">0</span> / <span id="val-armLeft-max">0</span></span>
+                  <button type="button" class="btn-limb-step" data-limb="armLeft" data-op="inc">+</button>
+                </div>
+              </div>
+
+              <!-- Torso Box (Center) -->
+              <div class="limb-box limb-box-torso" data-limb="torso">
+                <div class="limb-check-title">
+                  <input type="checkbox" id="check-torso" title="Membro Atingido / Arriscado">
+                  <label for="check-torso">Torso</label>
+                </div>
+                <div class="limb-counter">
+                  <button type="button" class="btn-limb-step" data-limb="torso" data-op="dec">-</button>
+                  <span class="limb-vals"><span id="val-torso-cur">0</span> / <span id="val-torso-max">0</span></span>
+                  <button type="button" class="btn-limb-step" data-limb="torso" data-op="inc">+</button>
+                </div>
+              </div>
+
+              <!-- Limb: Perna Direita (Viewer's Left) -->
+              <div class="limb-box limb-box-leg-right" data-limb="leg-right">
+                <div class="limb-check-title">
+                  <input type="checkbox" id="check-leg-right" title="Membro Atingido / Arriscado">
+                  <label for="check-leg-right">Perna Direita</label>
+                </div>
+                <div class="limb-counter">
+                  <button type="button" class="btn-limb-step" data-limb="legRight" data-op="dec">-</button>
+                  <span class="limb-vals"><span id="val-legRight-cur">0</span> / <span id="val-legRight-max">0</span></span>
+                  <button type="button" class="btn-limb-step" data-limb="legRight" data-op="inc">+</button>
+                </div>
+              </div>
+
+              <!-- Limb: Perna Esquerda (Viewer's Right) -->
+              <div class="limb-box limb-box-leg-left" data-limb="leg-left">
+                <div class="limb-check-title">
+                  <input type="checkbox" id="check-leg-left" title="Membro Atingido / Arriscado">
+                  <label for="check-leg-left">Perna Esquerda</label>
+                </div>
+                <div class="limb-counter">
+                  <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="dec">-</button>
+                  <span class="limb-vals"><span id="val-legLeft-cur">0</span> / <span id="val-legLeft-max">0</span></span>
+                  <button type="button" class="btn-limb-step" data-limb="legLeft" data-op="inc">+</button>
+                </div>
+              </div>
+
+              <!-- SVG Silhouette Container -->
+              <div class="silhouette-wrapper" id="silhouette-container">
+                <!-- Inlined Silhouette SVG with interactive hover/glow/damage classes -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 460" id="body-mannequin-svg" class="mannequin-svg">
+                  <!-- Head -->
+                  <g id="svg-limb-head" class="body-limb" data-limb="torso">
+                    <path d="M 120 18 C 110 18, 103 26, 103 38 C 103 52, 110 63, 114 68 L 116 76 L 124 76 L 126 68 C 130 63, 137 52, 137 38 C 137 26, 130 18, 120 18 Z" class="limb-path" />
+                  </g>
+                  <!-- Torso -->
+                  <g id="svg-limb-torso" class="body-limb" data-limb="torso">
+                    <path d="M 116 76 C 112 78, 98 83, 90 92 C 86 97, 88 106, 89 122 C 90 138, 92 154, 91 170 C 90 182, 87 194, 88 206 C 89 214, 96 222, 108 226 L 120 230 L 132 226 C 144 222, 151 214, 152 206 C 153 194, 150 182, 149 170 C 148 154, 150 138, 151 122 C 152 106, 154 97, 150 92 C 142 83, 128 78, 124 76 Z" class="limb-path" />
+                  </g>
+                  <!-- Braço Direito (Viewer's Left) -->
+                  <g id="svg-limb-arm-right" class="body-limb" data-limb="arm-right">
+                    <path d="M 88 94 C 82 96, 74 105, 71 116 C 68 128, 64 148, 60 168 C 57 182, 53 200, 48 214 C 45 221, 40 230, 36 238 L 34 246 L 38 248 C 42 242, 45 237, 49 231 L 47 243 L 50 244 C 53 238, 56 232, 58 225 C 62 212, 67 194, 71 176 C 75 158, 80 140, 83 128 C 85 120, 87 114, 88 106 Z" class="limb-path" />
+                  </g>
+                  <!-- Braço Esquerdo (Viewer's Right) -->
+                  <g id="svg-limb-arm-left" class="body-limb" data-limb="arm-left">
+                    <path d="M 152 94 C 158 96, 166 105, 169 116 C 172 128, 176 148, 180 168 C 183 182, 187 200, 192 214 C 195 221, 200 230, 204 238 L 206 246 L 202 248 C 198 242, 195 237, 191 231 L 193 243 L 190 244 C 187 238, 184 232, 182 225 C 178 212, 173 194, 169 176 C 165 158, 160 140, 157 128 C 155 120, 153 114, 152 106 Z" class="limb-path" />
+                  </g>
+                  <!-- Perna Direita (Viewer's Left) -->
+                  <g id="svg-limb-leg-right" class="body-limb" data-limb="leg-right">
+                    <path d="M 94 223 C 96 236, 97 254, 98 276 C 99 296, 99 316, 98 334 C 97 352, 95 374, 95 394 C 95 408, 93 420, 92 432 L 86 436 C 80 437, 72 437, 68 438 L 68 442 L 102 442 C 102 434, 103 422, 104 406 C 105 388, 107 366, 108 348 C 109 330, 110 310, 111 290 C 112 270, 114 250, 115 231 Z" class="limb-path" />
+                  </g>
+                  <!-- Perna Esquerda (Viewer's Right) -->
+                  <g id="svg-limb-leg-left" class="body-limb" data-limb="leg-left">
+                    <path d="M 146 223 C 144 236, 143 254, 142 276 C 141 296, 141 316, 142 334 C 143 352, 145 374, 145 394 C 145 408, 147 420, 148 432 L 154 436 C 160 437, 168 437, 172 438 L 172 442 L 138 442 C 138 434, 137 422, 136 406 C 135 388, 133 366, 132 348 C 131 330, 130 310, 129 290 C 128 270, 126 250, 125 231 Z" class="limb-path" />
+                  </g>
+                </svg>
+              </div>
+
+            </div>
+
+            <!-- Rolar Corpo Button -->
+            <div class="body-roll-section">
+              <button id="btn-roll-body" class="btn-body-roll" title="Rolar localização aleatória de impacto">
+                <span class="dice-icon">🎲</span> ROLAR CORPO
+              </button>
+              <div id="body-roll-feedback" class="body-roll-feedback"></div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- CARD: ATRIBUTOS & ASPECTOS -->
+        <article class="card card-attributes">
+          <div class="card-header-banner">
+            <h2 class="card-title">Atributos & Aspectos</h2>
+          </div>
+
+          <div class="attributes-grid">
+            <!-- Left Column Attributes -->
+            <div class="attr-subcolumn">
+              
+              <!-- CARNE -->
+              <div class="attribute-row attr-carne">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="carne" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-carne">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="carne" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="carne" data-name="CARNE" title="Rolar teste de CARNE">
+                  CARNE
+                </button>
+              </div>
+
+              <!-- FORÇA -->
+              <div class="attribute-row attr-forca">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="forca" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-forca">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="forca" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="forca" data-name="FORÇA" title="Rolar teste de FORÇA">
+                  FORÇA
+                </button>
+              </div>
+
+              <!-- PRONTIDÃO -->
+              <div class="attribute-row attr-prontidao">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-prontidao">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="prontidao" data-name="PRONTIDÃO" title="Rolar teste de PRONTIDÃO">
+                  PRONTIDÃO
+                </button>
+              </div>
+
+              <!-- DETERMINAÇÃO -->
+              <div class="attribute-row attr-determinacao">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-determinacao">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="determinacao" data-name="DETERMINAÇÃO" title="Rolar teste de DETERMINAÇÃO">
+                  DETERMINAÇÃO
+                </button>
+              </div>
+
+              <!-- MENTE -->
+              <div class="attribute-row attr-mente">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="mente" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-mente">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="mente" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="mente" data-name="MENTE" title="Rolar teste de MENTE">
+                  MENTE
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Right Column Attributes -->
+            <div class="attr-subcolumn">
+              
+              <!-- FÔLEGO -->
+              <div class="attribute-row attr-folego">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="folego" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-folego">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="folego" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="folego" data-name="FÔLEGO" title="Rolar teste de FÔLEGO">
+                  FÔLEGO
+                </button>
+              </div>
+
+              <!-- DANO -->
+              <div class="attribute-row attr-dano">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="dano" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-dano">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="dano" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="dano" data-name="DANO" title="Rolar teste de DANO">
+                  DANO
+                </button>
+              </div>
+
+              <!-- CORAGEM -->
+              <div class="attribute-row attr-coragem">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="coragem" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-coragem">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="coragem" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="coragem" data-name="CORAGEM" title="Rolar teste de CORAGEM">
+                  CORAGEM
+                </button>
+              </div>
+
+              <!-- PROTEÇÃO -->
+              <div class="attribute-row attr-protecao">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="protecao" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-protecao">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="protecao" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="protecao" data-name="PROTEÇÃO" title="Rolar teste de PROTEÇÃO">
+                  PROTEÇÃO
+                </button>
+              </div>
+
+              <!-- VELOCIDADE -->
+              <div class="attribute-row attr-velocidade">
+                <div class="attr-stepper">
+                  <button type="button" class="btn-attr-step" data-attr="velocidade" data-op="dec">-</button>
+                  <span class="attr-val" id="val-attr-velocidade">0</span>
+                  <button type="button" class="btn-attr-step" data-attr="velocidade" data-op="inc">+</button>
+                </div>
+                <button type="button" class="btn-attr-roll" data-attr="velocidade" data-name="VELOCIDADE" title="Rolar teste de VELOCIDADE">
+                  VELOCIDADE
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- ================= COLUNA 3: ZONA DE ACERTO & TABS ================= -->
+      <section class="sheet-column column-right">
+        
+        <!-- TOP CONTROLS: ZONA DE ACERTO & ROLL / HISTORY BUTTONS -->
+        <div class="top-controls-panel">
+          <div class="zona-acerto-group">
+            <span class="zona-title">ZONA DE ACERTO</span>
+            <div class="zona-pills" role="radiogroup" aria-label="Zona de Acerto">
+              <button type="button" class="btn-zona" data-zona="reduzida" role="radio" aria-checked="false" title="Reduzida: Sucesso com 10+">Reduzida</button>
+              <button type="button" class="btn-zona active" data-zona="normal" role="radio" aria-checked="true" title="Normal: Sucesso com 13+">Normal</button>
+              <button type="button" class="btn-zona" data-zona="aumentada" role="radio" aria-checked="false" title="Aumentada: Sucesso com 16+">Aumentada</button>
+            </div>
+          </div>
+
+          <div class="quick-action-buttons">
+            <button id="btn-open-dice-roller" class="btn-action-pill" title="Abrir rolador de dados livre">
+              ROLAGEM LIVRE <span class="action-icon">🎲</span>
+            </button>
+            <button id="btn-open-history" class="btn-action-pill" title="Abrir histórico de rolagens">
+              <span class="action-icon">💾</span> HISTÓRICO
+            </button>
+          </div>
+        </div>
+
+        <!-- TABBED CARD: INVENTÁRIO / CONHECIMENTOS / MAZELAS / NOTAS -->
+        <article class="card card-tabs-panel">
+          <!-- Tab Navigation Headers -->
+          <div class="card-tabs-header" role="tablist">
+            <button type="button" class="tab-btn active" data-tab="inventario" role="tab" aria-selected="true">Inventário</button>
+            <button type="button" class="tab-btn" data-tab="conhecimentos" role="tab" aria-selected="false">Conhecimentos</button>
+            <button type="button" class="tab-btn" data-tab="mazelas" role="tab" aria-selected="false">Mazelas</button>
+            <button type="button" class="tab-btn" data-tab="notas" role="tab" aria-selected="false">Notas</button>
+          </div>
+
+          <div class="tab-content-container">
+            
+            <!-- TAB 1: INVENTÁRIO -->
+            <div class="tab-pane active" id="tab-inventario" role="tabpanel">
+              
+              <!-- Carregados -->
+              <div class="sub-header-bar">
+                <span>✦ CARREGADOS</span>
+              </div>
+
+              <div class="inventory-table-wrap">
+                <table class="inventory-table" id="table-carregados">
+                  <thead>
+                    <tr>
+                      <th class="col-usar">USAR</th>
+                      <th class="col-item">ITEM</th>
+                      <th class="col-dano">DANO</th>
+                      <th class="col-estresse">ESTRESSE</th>
+                      <th class="col-actions">...</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-carregados">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Guardados -->
+              <div class="sub-header-bar sub-header-flex">
+                <span>✦ GUARDADOS</span>
+                <div class="slots-tracker">
+                  <span class="slots-label">ESPAÇOS EM USO:</span>
+                  <div class="slots-boxes" id="slots-boxes" title="Espaços de carga do inventário">
+                    <!-- Dynamic slot checkboxes -->
+                  </div>
+                </div>
+              </div>
+
+              <div class="inventory-table-wrap">
+                <table class="inventory-table" id="table-guardados">
+                  <thead>
+                    <tr>
+                      <th class="col-tipo">TIPO</th>
+                      <th class="col-item">ITEM</th>
+                      <th class="col-carga">CARGA</th>
+                      <th class="col-usos">USOS</th>
+                      <th class="col-actions">...</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody-guardados">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Add Item Button -->
+              <div class="add-item-wrap">
+                <button type="button" id="btn-add-item" class="btn-add-block">
+                  + ADICIONAR ITENS
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 2: CONHECIMENTOS -->
+            <div class="tab-pane" id="tab-conhecimentos" role="tabpanel">
+              <div class="sub-header-bar sub-header-flex">
+                <span>✦ CONHECIMENTOS & PERÍCIAS</span>
+                <button type="button" id="btn-add-knowledge" class="btn-sub-icon" title="Adicionar Conhecimento">+</button>
+              </div>
+              <div class="knowledge-list" id="knowledge-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- TAB 3: MAZELAS -->
+            <div class="tab-pane" id="tab-mazelas" role="tabpanel">
+              <div class="sub-header-bar sub-header-flex">
+                <span>✦ MAZELAS, TRAUMAS & CICATRIZES</span>
+                <button type="button" id="btn-add-mazela" class="btn-sub-icon" title="Adicionar Mazela">+</button>
+              </div>
+              <div class="mazelas-list" id="mazelas-list">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- TAB 4: NOTAS -->
+            <div class="tab-pane" id="tab-notas" role="tabpanel">
+              <div class="sub-header-bar">
+                <span>✦ DIÁRIO DA PERSONA & ANOTAÇÕES</span>
+              </div>
+              <div class="notes-container">
+                <textarea id="persona-notes" placeholder="Escreva aqui segredos da campanha, pistas, nomes de contatos, rituais ocultos ou notas da sessão... (Salvo automaticamente)"></textarea>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </section>
+
+    </main>
+
+    <!-- Footer Credit -->
+    <footer class="sheet-footer">
+      <span>Oblívio RPG - Sistema criado por Arthur Roma e George Prestrêlo (ggtonho) • Ficha de Persona Web offline/cache</span>
+    </footer>
+  </div>
+
+  <!-- ================= MODALS & DRAWERS ================= -->
+
+  <!-- MODAL: ROLAGEM LIVRE (DICE ROLLER) -->
+  <div class="modal-overlay" id="modal-dice">
+    <div class="modal-box modal-dice-roller">
+      <div class="modal-header">
+        <h3 class="modal-title">ROLAGEM LIVRE</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-dice">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Dice Quick Selection -->
+        <div class="dice-selection-grid">
+          <button type="button" class="btn-dice-select" data-die="4">d4</button>
+          <button type="button" class="btn-dice-select" data-die="6">d6</button>
+          <button type="button" class="btn-dice-select" data-die="8">d8</button>
+          <button type="button" class="btn-dice-select" data-die="10">d10</button>
+          <button type="button" class="btn-dice-select" data-die="12">d12</button>
+          <button type="button" class="btn-dice-select active" data-die="20">d20</button>
+          <button type="button" class="btn-dice-select" data-die="100">d100</button>
+        </div>
+
+        <!-- Dice Formula & Modifiers -->
+        <div class="dice-controls-row">
+          <div class="dice-control-item">
+            <label for="dice-count">Qtd Dados</label>
+            <input type="number" id="dice-count" value="1" min="1" max="20">
+          </div>
+          <div class="dice-control-item">
+            <label for="dice-mod">Modificador (+/-)</label>
+            <input type="number" id="dice-mod" value="0">
+          </div>
+          <div class="dice-control-item">
+            <label for="dice-target-zona">Zona de Acerto</label>
+            <select id="dice-target-zona">
+              <option value="normal">Normal (13+)</option>
+              <option value="reduzida">Reduzida (10+)</option>
+              <option value="aumentada">Aumentada (16+)</option>
+              <option value="none">Nenhuma (Apenas Soma)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Free formula input -->
+        <div class="dice-formula-row">
+          <label for="dice-formula-input">Fórmula Manual (ex: 2d10+3, 1d20-2):</label>
+          <div class="formula-input-wrap">
+            <input type="text" id="dice-formula-input" placeholder="ex: 1d20+2">
+            <button type="button" id="btn-roll-formula" class="btn-modal-action">Rolar Fórmula</button>
+          </div>
+        </div>
+
+        <!-- Roll Button -->
+        <button type="button" id="btn-execute-dice-roll" class="btn-roll-huge">
+          🎲 ROLAR DADOS
+        </button>
+
+        <!-- Roll Output Display -->
+        <div class="dice-result-display" id="dice-result-display">
+          <div class="dice-result-placeholder">Selecione os dados e clique em ROLAR</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAWER / MODAL: HISTÓRICO DE ROLAGENS -->
+  <div class="modal-overlay" id="modal-history">
+    <div class="modal-box modal-history-box">
+      <div class="modal-header">
+        <h3 class="modal-title">HISTÓRICO DE ROLAGENS</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-history">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="history-actions-bar">
+          <button type="button" id="btn-clear-history" class="btn-tool-secondary">Limpar Histórico</button>
+          <button type="button" id="btn-copy-history" class="btn-tool-secondary">Copiar Log</button>
+        </div>
+        <div class="history-log-list" id="history-log-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR / EDITAR ITEM -->
+  <div class="modal-overlay" id="modal-item">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="item-modal-title">ADICIONAR ITEM</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-item">✕</button>
+      </div>
+      <form id="form-item" class="modal-form">
+        <input type="hidden" id="item-id">
+        <div class="form-row">
+          <label for="item-category">Categoria</label>
+          <select id="item-category" required>
+            <option value="carregado">Carregado (Equipado / Mãos)</option>
+            <option value="guardado">Guardado (Mochila / Bolsos)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label for="item-name">Nome do Item</label>
+          <input type="text" id="item-name" placeholder="Ex: Lâmina Oculta, Pistola Antiga, Bandagem" required>
+        </div>
+        <div class="form-row form-row-2col">
+          <div>
+            <label for="item-type">Tipo</label>
+            <input type="text" id="item-type" placeholder="Ex: Arma, Utilitário, Relíquia">
+          </div>
+          <div>
+            <label for="item-damage">Dano / Fórmula</label>
+            <input type="text" id="item-damage" placeholder="Ex: 1d8+1, 2d6, -">
+          </div>
+        </div>
+        <div class="form-row form-row-3col">
+          <div>
+            <label for="item-stress">Estresse / Custo</label>
+            <input type="text" id="item-stress" placeholder="Ex: 0, +1, -1">
+          </div>
+          <div>
+            <label for="item-burden">Carga (Espaços)</label>
+            <input type="number" id="item-burden" value="1" min="0" max="10">
+          </div>
+          <div>
+            <label for="item-uses">Usos (Atual / Max)</label>
+            <input type="text" id="item-uses" placeholder="Ex: 3/3, ∞">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="item-desc">Descrição / Efeitos Especiais</label>
+          <textarea id="item-desc" rows="2" placeholder="Propriedades da arma, alcance, efeitos..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-item">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR / EDITAR HABILIDADE -->
+  <div class="modal-overlay" id="modal-ability">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="ability-modal-title">ADICIONAR HABILIDADE</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-ability">✕</button>
+      </div>
+      <form id="form-ability" class="modal-form">
+        <input type="hidden" id="ability-id">
+        <div class="form-row">
+          <label for="ability-name-input">Nome da Habilidade</label>
+          <input type="text" id="ability-name-input" placeholder="Ex: Olhar do Abismo, Frenesi, Instinto Selvagem" required>
+        </div>
+        <div class="form-row form-row-2col">
+          <div>
+            <label for="ability-type-input">Tipo / Gatilho</label>
+            <input type="text" id="ability-type-input" placeholder="Ex: AÇÃO, REAÇÃO, PASSIVO, CUSTO 1 PA">
+          </div>
+          <div>
+            <label for="ability-cost-input">Custo de Estresse / PA</label>
+            <input type="text" id="ability-cost-input" placeholder="Ex: 1 Estresse, 2 PA">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="ability-desc-input">Descrição dos Efeitos</label>
+          <textarea id="ability-desc-input" rows="3" placeholder="Descreva os efeitos mecânicos e narrativos da habilidade..." required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-ability">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar Habilidade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR CONHECIMENTO -->
+  <div class="modal-overlay" id="modal-knowledge">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="knowledge-modal-title">ADICIONAR CONHECIMENTO</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-knowledge">✕</button>
+      </div>
+      <form id="form-knowledge" class="modal-form">
+        <input type="hidden" id="knowledge-id">
+        <div class="form-row">
+          <label for="knowledge-name-input">Nome do Conhecimento / Perícia</label>
+          <input type="text" id="knowledge-name-input" placeholder="Ex: Ocultismo, Medicina Macabra, Sobrevivência, Criptografia" required>
+        </div>
+        <div class="form-row form-row-2col">
+          <div>
+            <label for="knowledge-attr-input">Atributo Relacionado</label>
+            <select id="knowledge-attr-input">
+              <option value="mente">MENTE</option>
+              <option value="prontidao">PRONTIDÃO</option>
+              <option value="determinacao">DETERMINAÇÃO</option>
+              <option value="forca">FORÇA</option>
+              <option value="carne">CARNE</option>
+              <option value="folego">FÔLEGO</option>
+              <option value="coragem">CORAGEM</option>
+              <option value="velocidade">VELOCIDADE</option>
+            </select>
+          </div>
+          <div>
+            <label for="knowledge-bonus-input">Bônus / Nível</label>
+            <input type="number" id="knowledge-bonus-input" value="0" min="-5" max="10">
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="knowledge-desc-input">Anotações / Especializações</label>
+          <textarea id="knowledge-desc-input" rows="2" placeholder="Detalhes de como este saber foi adquirido..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-knowledge">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADICIONAR MAZELA -->
+  <div class="modal-overlay" id="modal-mazela">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="mazela-modal-title">REGISTRAR MAZELA</h3>
+        <button type="button" class="btn-close-modal" data-close="modal-mazela">✕</button>
+      </div>
+      <form id="form-mazela" class="modal-form">
+        <input type="hidden" id="mazela-id">
+        <div class="form-row">
+          <label for="mazela-name-input">Nome da Mazela / Trauma</label>
+          <input type="text" id="mazela-name-input" placeholder="Ex: Alucinações Lunares, Fratura Exposta, Paranoia Aguda" required>
+        </div>
+        <div class="form-row form-row-2col">
+          <div>
+            <label for="mazela-severity-input">Gravidade</label>
+            <select id="mazela-severity-input">
+              <option value="Leve">Leve</option>
+              <option value="Média" selected>Média</option>
+              <option value="Grave">Grave</option>
+              <option value="Crítica">Crítica / Permanente</option>
+            </select>
+          </div>
+          <div>
+            <label for="mazela-type-input">Tipo</label>
+            <select id="mazela-type-input">
+              <option value="Mental">Mental / Psicológica</option>
+              <option value="Física">Física / Corporal</option>
+              <option value="Oculta">Oculta / Sobrenatural</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="mazela-desc-input">Penalidade / Gatilho</label>
+          <textarea id="mazela-desc-input" rows="3" placeholder="Qual penalidade mecânica ou complicação dramática esta mazela causa?" required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close="modal-mazela">Cancelar</button>
+          <button type="submit" class="btn-primary">Registrar Mazela</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FLOATING DICE ROLL TOAST / BANNER -->
+  <div id="dice-toast" class="dice-toast">
+    <div class="toast-content" id="toast-content">
+      <!-- Injected on roll -->
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="audio.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

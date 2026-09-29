@@ -1,0 +1,12 @@
+{
+  "name": "oblivio-rpg-ficha",
+  "version": "1.0.0",
+  "description": "Ficha Interativa para Oblívio RPG - Estilo RPGPedia com salvamento local",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["rpg", "oblivio", "ficha", "sheet"],
+  "author": "",
+  "license": "MIT"
+}
