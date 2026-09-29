@@ -1127,46 +1127,59 @@ html, body {
 }
 
 /* ==========================================================================
-   COLUNA 2: ATRIBUTOS & ASPECTOS (TOTALMENTE SEM EMOJIS, 100% RESPONSIVO)
+   COLUNA 2: ATRIBUTOS (5 ATRIBUTOS OFICIAIS COM METADE)
    ========================================================================== */
-.attributes-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 14px;
+.attributes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   padding: 12px 14px;
 }
 
-@media (max-width: 480px) {
-  .attributes-grid {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
-.attr-subcolumn {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  min-width: 0;
-}
-
-.attribute-row {
+.attribute-card-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   background: var(--bg-surface-1);
   border: 1px solid var(--border-subtle);
-  border-radius: 5px;
-  padding: 5px 8px;
+  border-radius: 6px;
+  padding: 6px 10px;
   min-width: 0;
   transition: all 0.2s ease;
 }
 
-.attribute-row:hover {
+.attribute-card-row:hover {
   border-color: var(--accent-gold);
   background: var(--bg-surface-2);
   transform: translateX(2px);
+}
+
+.btn-attr-roll {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 4px 6px;
+  border-radius: 4px;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.btn-attr-roll:hover {
+  color: var(--accent-gold);
+  background: rgba(250, 204, 21, 0.08);
 }
 
 .attr-stepper {
@@ -1195,39 +1208,49 @@ html, body {
 }
 
 .attr-val {
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 800;
+  font-size: 1rem;
   color: #ffffff;
-  min-width: 18px;
+  min-width: 22px;
   text-align: center;
   font-family: var(--font-mono);
 }
 
-.btn-attr-roll {
-  background: transparent;
-  border: none;
-  color: var(--text-primary);
-  font-family: var(--font-serif);
+/* Botão de Rolagem com a Metade do Atributo */
+.btn-attr-half-roll {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(250, 204, 21, 0.07);
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  color: var(--accent-gold);
+  padding: 4px 9px;
+  border-radius: 5px;
   font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
+  font-weight: 800;
+  font-family: var(--font-mono);
   cursor: pointer;
-  text-align: left;
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 3px 6px;
-  border-radius: 4px;
+  flex-shrink: 0;
   user-select: none;
   transition: all 0.15s ease;
 }
 
-.btn-attr-roll:hover {
-  color: var(--accent-gold);
-  background: rgba(250, 204, 21, 0.08);
+.btn-attr-half-roll:hover {
+  background: var(--accent-gold);
+  color: #07070b;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+  transform: scale(1.04);
+}
+
+.half-label {
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
+.half-val {
+  font-size: 0.9rem;
+  font-weight: 900;
 }
 
 /* ==========================================================================

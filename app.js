@@ -39,12 +39,7 @@
         forca: 0,
         prontidao: 0,
         determinacao: 0,
-        mente: 0,
-        folego: 0,
-        dano: 0,
-        coragem: 0,
-        protecao: 0,
-        velocidade: 0
+        mente: 0
       },
       zona: 'normal', // 'reduzida' | 'normal' | 'aumentada'
       inventory: {
@@ -232,7 +227,7 @@
           sheet.inventory.slotsUsed = [false, false, false, false, false];
         }
         if (!sheet.attributes) {
-          sheet.attributes = { carne: 0, forca: 0, prontidao: 0, determinacao: 0, mente: 0, folego: 0, dano: 0, coragem: 0, protecao: 0, velocidade: 0 };
+          sheet.attributes = { carne: 0, forca: 0, prontidao: 0, determinacao: 0, mente: 0 };
         }
       });
 
@@ -499,15 +494,23 @@
     });
   }
 
-  // --- Render: Atributos & Aspectos ---
+  // --- Render: Atributos & Metades ---
   function renderAttributes() {
     const s = getActiveSheet();
-    const attrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente', 'folego', 'dano', 'coragem', 'protecao', 'velocidade'];
+    const attrs = ['carne', 'forca', 'prontidao', 'determinacao', 'mente'];
 
     attrs.forEach(attr => {
+      const fixedVal = Number(s.attributes[attr] ?? 0);
+      const halfVal = Math.floor(fixedVal / 2);
+
       const valEl = document.getElementById(`val-attr-${attr}`);
       if (valEl) {
-        valEl.textContent = s.attributes[attr] ?? 0;
+        valEl.textContent = fixedVal;
+      }
+
+      const halfEl = document.getElementById(`val-attr-${attr}-half`);
+      if (halfEl) {
+        halfEl.textContent = halfVal;
       }
     });
   }
@@ -932,10 +935,11 @@
     }, 3200);
   }
 
-  // Rolagem de Atributo
-  function rollAttributeCheck(attrKey, attrDisplayName) {
+  // Rolagem de Atributo (Total ou Metade)
+  function rollAttributeCheck(attrKey, attrDisplayName, isHalf = false) {
     const s = getActiveSheet();
-    const attrValue = Number(s.attributes[attrKey] || 0);
+    const rawVal = Number(s.attributes[attrKey] || 0);
+    const attrValue = isHalf ? Math.floor(rawVal / 2) : rawVal;
     const naturalD20 = Math.floor(Math.random() * 20) + 1;
     const finalTotal = naturalD20 + attrValue;
     const evalResult = evaluateOblivioRoll(naturalD20, finalTotal, s.zona);
@@ -949,10 +953,13 @@
       }
     }, 450);
 
+    const checkTitle = isHalf ? `TESTE DE ${attrDisplayName} (½ METADE)` : `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`;
+    const formulaText = isHalf ? `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue} (½ de ${rawVal})` : `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`;
+
     triggerCinematicRoll({
-      title: `TESTE DE ${attrDisplayName} (${s.zona.toUpperCase()})`,
+      title: checkTitle,
       total: finalTotal,
-      formula: `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue}`,
+      formula: formulaText,
       verdict: evalResult.verdict,
       verdictColor: evalResult.color,
       typeClass: evalResult.typeClass,
@@ -960,9 +967,9 @@
     });
 
     addHistoryEntry({
-      title: `Teste de ${attrDisplayName}`,
+      title: isHalf ? `Teste de ${attrDisplayName} (Metade)` : `Teste de ${attrDisplayName}`,
       total: `${finalTotal}`,
-      formula: `1d20 [${naturalD20}] ${attrValue >= 0 ? '+' : ''}${attrValue} = ${finalTotal}`,
+      formula: `${formulaText} = ${finalTotal}`,
       zonaText: `Zona: ${s.zona.toUpperCase()}`,
       verdict: evalResult.verdict,
       verdictColor: evalResult.color,
@@ -1806,7 +1813,15 @@
       btn.addEventListener('click', () => {
         const attr = btn.dataset.attr;
         const name = btn.dataset.name || attr.toUpperCase();
-        rollAttributeCheck(attr, name);
+        rollAttributeCheck(attr, name, false);
+      });
+    });
+
+    document.querySelectorAll('.btn-attr-half-roll').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const attr = btn.dataset.attr;
+        const name = btn.dataset.name || attr.toUpperCase();
+        rollAttributeCheck(attr, name, true);
       });
     });
 

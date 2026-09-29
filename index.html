@@ -389,141 +389,91 @@
           </div>
         </article>
 
-        <!-- CARD: ATRIBUTOS & ASPECTOS (TOTALMENTE SEM EMOJIS, 100% RESPONSIVO) -->
+        <!-- CARD: ATRIBUTOS (5 ATRIBUTOS OFICIAIS COM METADE) -->
         <article class="card card-attributes">
           <div class="card-header-banner">
-            <h2 class="card-title">Atributos & Aspectos</h2>
+            <h2 class="card-title">Atributos</h2>
           </div>
 
-          <div class="attributes-grid">
-            <!-- Left Subcolumn: Físico & Mental -->
-            <div class="attr-subcolumn">
-              
-              <!-- CARNE -->
-              <div class="attribute-row attr-carne" data-attr="carne">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="carne" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-carne">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="carne" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="carne" data-name="CARNE" title="Rolar teste de CARNE (1d20 + CARNE vs Zona)">
-                  CARNE
-                </button>
+          <div class="attributes-list">
+            <!-- CARNE -->
+            <div class="attribute-card-row" data-attr="carne">
+              <button type="button" class="btn-attr-roll" data-attr="carne" data-name="CARNE" title="Rolar teste completo de CARNE (1d20 + CARNE vs Zona)">
+                <span class="attr-name">CARNE</span>
+              </button>
+              <div class="attr-stepper" title="Atributo Fixo / Valor Central">
+                <button type="button" class="btn-attr-step" data-attr="carne" data-op="dec" title="Diminuir">-</button>
+                <span class="attr-val" id="val-attr-carne">0</span>
+                <button type="button" class="btn-attr-step" data-attr="carne" data-op="inc" title="Aumentar">+</button>
               </div>
-
-              <!-- FORÇA -->
-              <div class="attribute-row attr-forca" data-attr="forca">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="forca" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-forca">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="forca" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="forca" data-name="FORÇA" title="Rolar teste de FORÇA (1d20 + FORÇA vs Zona)">
-                  FORÇA
-                </button>
-              </div>
-
-              <!-- PRONTIDÃO -->
-              <div class="attribute-row attr-prontidao" data-attr="prontidao">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-prontidao">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="prontidao" data-name="PRONTIDÃO" title="Rolar teste de PRONTIDÃO (1d20 + PRONTIDÃO vs Zona)">
-                  PRONTIDÃO
-                </button>
-              </div>
-
-              <!-- DETERMINAÇÃO -->
-              <div class="attribute-row attr-determinacao" data-attr="determinacao">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-determinacao">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="determinacao" data-name="DETERMINAÇÃO" title="Rolar teste de DETERMINAÇÃO (1d20 + DETERMINAÇÃO vs Zona)">
-                  DETERMINAÇÃO
-                </button>
-              </div>
-
-              <!-- MENTE -->
-              <div class="attribute-row attr-mente" data-attr="mente">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="mente" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-mente">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="mente" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="mente" data-name="MENTE" title="Rolar teste de MENTE (1d20 + MENTE vs Zona)">
-                  MENTE
-                </button>
-              </div>
-
+              <button type="button" class="btn-attr-half-roll" data-attr="carne" data-name="CARNE" title="Rolar teste com a METADE de CARNE (arredondado para baixo)">
+                <span class="half-label">½</span>
+                <span class="half-val" id="val-attr-carne-half">0</span>
+              </button>
             </div>
 
-            <!-- Right Subcolumn: Vital & Combate -->
-            <div class="attr-subcolumn">
-              
-              <!-- FÔLEGO -->
-              <div class="attribute-row attr-folego" data-attr="folego">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="folego" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-folego">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="folego" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="folego" data-name="FÔLEGO" title="Rolar teste de FÔLEGO (1d20 + FÔLEGO vs Zona)">
-                  FÔLEGO
-                </button>
+            <!-- FORÇA -->
+            <div class="attribute-card-row" data-attr="forca">
+              <button type="button" class="btn-attr-roll" data-attr="forca" data-name="FORÇA" title="Rolar teste completo de FORÇA (1d20 + FORÇA vs Zona)">
+                <span class="attr-name">FORÇA</span>
+              </button>
+              <div class="attr-stepper" title="Atributo Fixo / Valor Central">
+                <button type="button" class="btn-attr-step" data-attr="forca" data-op="dec" title="Diminuir">-</button>
+                <span class="attr-val" id="val-attr-forca">0</span>
+                <button type="button" class="btn-attr-step" data-attr="forca" data-op="inc" title="Aumentar">+</button>
               </div>
+              <button type="button" class="btn-attr-half-roll" data-attr="forca" data-name="FORÇA" title="Rolar teste com a METADE de FORÇA (arredondado para baixo)">
+                <span class="half-label">½</span>
+                <span class="half-val" id="val-attr-forca-half">0</span>
+              </button>
+            </div>
 
-              <!-- DANO -->
-              <div class="attribute-row attr-dano" data-attr="dano">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="dano" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-dano">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="dano" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="dano" data-name="DANO" title="Rolar teste de DANO (1d20 + DANO vs Zona)">
-                  DANO
-                </button>
+            <!-- PRONTIDÃO -->
+            <div class="attribute-card-row" data-attr="prontidao">
+              <button type="button" class="btn-attr-roll" data-attr="prontidao" data-name="PRONTIDÃO" title="Rolar teste completo de PRONTIDÃO (1d20 + PRONTIDÃO vs Zona)">
+                <span class="attr-name">PRONTIDÃO</span>
+              </button>
+              <div class="attr-stepper" title="Atributo Fixo / Valor Central">
+                <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="dec" title="Diminuir">-</button>
+                <span class="attr-val" id="val-attr-prontidao">0</span>
+                <button type="button" class="btn-attr-step" data-attr="prontidao" data-op="inc" title="Aumentar">+</button>
               </div>
+              <button type="button" class="btn-attr-half-roll" data-attr="prontidao" data-name="PRONTIDÃO" title="Rolar teste com a METADE de PRONTIDÃO (arredondado para baixo)">
+                <span class="half-label">½</span>
+                <span class="half-val" id="val-attr-prontidao-half">0</span>
+              </button>
+            </div>
 
-              <!-- CORAGEM -->
-              <div class="attribute-row attr-coragem" data-attr="coragem">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="coragem" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-coragem">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="coragem" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="coragem" data-name="CORAGEM" title="Rolar teste de CORAGEM (1d20 + CORAGEM vs Zona)">
-                  CORAGEM
-                </button>
+            <!-- DETERMINAÇÃO -->
+            <div class="attribute-card-row" data-attr="determinacao">
+              <button type="button" class="btn-attr-roll" data-attr="determinacao" data-name="DETERMINAÇÃO" title="Rolar teste completo de DETERMINAÇÃO (1d20 + DETERMINAÇÃO vs Zona)">
+                <span class="attr-name">DETERMINAÇÃO</span>
+              </button>
+              <div class="attr-stepper" title="Atributo Fixo / Valor Central">
+                <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="dec" title="Diminuir">-</button>
+                <span class="attr-val" id="val-attr-determinacao">0</span>
+                <button type="button" class="btn-attr-step" data-attr="determinacao" data-op="inc" title="Aumentar">+</button>
               </div>
+              <button type="button" class="btn-attr-half-roll" data-attr="determinacao" data-name="DETERMINAÇÃO" title="Rolar teste com a METADE de DETERMINAÇÃO (arredondado para baixo)">
+                <span class="half-label">½</span>
+                <span class="half-val" id="val-attr-determinacao-half">0</span>
+              </button>
+            </div>
 
-              <!-- PROTEÇÃO -->
-              <div class="attribute-row attr-protecao" data-attr="protecao">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="protecao" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-protecao">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="protecao" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="protecao" data-name="PROTEÇÃO" title="Rolar teste de PROTEÇÃO (1d20 + PROTEÇÃO vs Zona)">
-                  PROTEÇÃO
-                </button>
+            <!-- MENTE -->
+            <div class="attribute-card-row" data-attr="mente">
+              <button type="button" class="btn-attr-roll" data-attr="mente" data-name="MENTE" title="Rolar teste completo de MENTE (1d20 + MENTE vs Zona)">
+                <span class="attr-name">MENTE</span>
+              </button>
+              <div class="attr-stepper" title="Atributo Fixo / Valor Central">
+                <button type="button" class="btn-attr-step" data-attr="mente" data-op="dec" title="Diminuir">-</button>
+                <span class="attr-val" id="val-attr-mente">0</span>
+                <button type="button" class="btn-attr-step" data-attr="mente" data-op="inc" title="Aumentar">+</button>
               </div>
-
-              <!-- VELOCIDADE -->
-              <div class="attribute-row attr-velocidade" data-attr="velocidade">
-                <div class="attr-stepper">
-                  <button type="button" class="btn-attr-step" data-attr="velocidade" data-op="dec" title="Diminuir">-</button>
-                  <span class="attr-val" id="val-attr-velocidade">0</span>
-                  <button type="button" class="btn-attr-step" data-attr="velocidade" data-op="inc" title="Aumentar">+</button>
-                </div>
-                <button type="button" class="btn-attr-roll" data-attr="velocidade" data-name="VELOCIDADE" title="Rolar teste de VELOCIDADE (1d20 + VELOCIDADE vs Zona)">
-                  VELOCIDADE
-                </button>
-              </div>
-
+              <button type="button" class="btn-attr-half-roll" data-attr="mente" data-name="MENTE" title="Rolar teste com a METADE de MENTE (arredondado para baixo)">
+                <span class="half-label">½</span>
+                <span class="half-val" id="val-attr-mente-half">0</span>
+              </button>
             </div>
           </div>
         </article>
@@ -991,11 +941,6 @@
               <option value="determinacao">DETERMINAÇÃO</option>
               <option value="forca">FORÇA</option>
               <option value="carne">CARNE</option>
-              <option value="folego">FÔLEGO</option>
-              <option value="coragem">CORAGEM</option>
-              <option value="velocidade">VELOCIDADE</option>
-              <option value="dano">DANO</option>
-              <option value="protecao">PROTEÇÃO</option>
             </select>
           </div>
           <div>
