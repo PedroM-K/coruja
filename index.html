@@ -118,7 +118,7 @@
               <label for="persona-ap">Pontos de Ação</label>
               <div class="stepper-input">
                 <button type="button" class="btn-step" data-target="persona-ap" data-op="dec">-</button>
-                <input type="number" id="persona-ap" value="5" min="0" max="99">
+                <input type="number" id="persona-ap" value="0" min="0" max="99">
                 <button type="button" class="btn-step" data-target="persona-ap" data-op="inc">+</button>
               </div>
             </div>
@@ -140,15 +140,21 @@
           </div>
 
           <div class="initial-ability-container">
-            <div class="ability-card-item initial-ability" id="initial-ability-display">
+            <div class="ability-card-item initial-ability" id="initial-ability-display" style="display: none;">
               <div class="ability-title-row">
-                <span class="ability-name" id="initial-ability-name">Voracidade</span>
-                <span class="ability-type" id="initial-ability-type">(EFEITO PASSIVO)</span>
-                <button class="btn-toggle-ability" id="btn-toggle-initial-desc">▼</button>
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <span class="ability-name" id="initial-ability-name"></span>
+                  <span class="ability-type" id="initial-ability-type"></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <button type="button" class="btn-sm-action" id="btn-delete-initial-ability" title="Remover Habilidade Inicial">✕</button>
+                  <button type="button" class="btn-toggle-ability" id="btn-toggle-initial-desc">▼</button>
+                </div>
               </div>
-              <div class="ability-body" id="initial-ability-desc">
-                Ao consumir a carne ou essência de uma criatura derrotada ou sacrifício recente, regenere 1 ponto de Estresse em qualquer região do corpo.
-              </div>
+              <div class="ability-body" id="initial-ability-desc"></div>
+            </div>
+            <div id="initial-ability-empty" style="color: #666; font-size: 0.75rem; text-align: center; padding: 8px;">
+              Nenhuma habilidade inicial definida. Clique em ✎ para adicionar.
             </div>
           </div>
 

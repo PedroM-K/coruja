@@ -22,22 +22,10 @@
       player: '',
       role: 'Quem Age',
       avatar: 'assets/avatar-sigil.svg',
-      ap: 5,
+      ap: 0,
       ev: 0,
-      initialAbility: {
-        name: 'Voracidade',
-        type: '(EFEITO PASSIVO)',
-        desc: 'Sempre que devorar os restos mortais de uma vítima ou carne recém-abatida, restaure 1 de Estresse em uma região corporal à sua escolha.'
-      },
-      abilities: [
-        {
-          id: 'ab_1',
-          name: 'Golpe Voraz',
-          type: 'AÇÃO DE COMBATE',
-          cost: '1 PA',
-          desc: ' desfere um ataque visceral. Se acertar, causa dano normal e aplica 1 de Estresse adicional no membro do alvo.'
-        }
-      ],
+      initialAbility: null,
+      abilities: [],
       stress: {
         armRight: { cur: 0, max: 0, checked: false },
         armLeft: { cur: 0, max: 0, checked: false },
@@ -144,10 +132,23 @@
           sheet.knowledge = sheet.knowledge.filter(k => k.id !== 'kn_1' && k.id !== 'kn_2' && k.name !== 'Sobrevivência Urbana' && k.name !== 'Ocultismo Proibido');
           if (sheet.knowledge.length !== prevLen) migrated = true;
         }
+        if (sheet.ap === 5) {
+          sheet.ap = 0;
+          migrated = true;
+        }
         if (Array.isArray(sheet.mazelas)) {
           const prevLen = sheet.mazelas.length;
           sheet.mazelas = sheet.mazelas.filter(m => m.id !== 'mz_1' && m.name !== 'Pesadelos Recorrentes');
           if (sheet.mazelas.length !== prevLen) migrated = true;
+        }
+        if (Array.isArray(sheet.abilities)) {
+          const prevLen = sheet.abilities.length;
+          sheet.abilities = sheet.abilities.filter(ab => ab.id !== 'ab_1' && ab.name !== 'Golpe Voraz');
+          if (sheet.abilities.length !== prevLen) migrated = true;
+        }
+        if (sheet.initialAbility && (sheet.initialAbility.name === 'Voracidade' || sheet.initialAbility.name === '(Nome da Habilidade)' || !sheet.initialAbility.name)) {
+          sheet.initialAbility = null;
+          migrated = true;
         }
         if (sheet.inventory) {
           if (Array.isArray(sheet.inventory.carregados)) {
@@ -294,7 +295,7 @@
     const s = getActiveSheet();
     const apEl = document.getElementById('persona-ap');
     const evEl = document.getElementById('persona-ev');
-    if (apEl) apEl.value = s.ap ?? 5;
+    if (apEl) apEl.value = s.ap ?? 0;
     if (evEl) evEl.value = s.ev ?? 0;
   }
 
@@ -303,13 +304,20 @@
     const s = getActiveSheet();
 
     // Habilidade Inicial
+    const initDisplay = document.getElementById('initial-ability-display');
+    const initEmpty = document.getElementById('initial-ability-empty');
     const initName = document.getElementById('initial-ability-name');
     const initType = document.getElementById('initial-ability-type');
     const initDesc = document.getElementById('initial-ability-desc');
-    if (s.initialAbility) {
+
+    const hasInitial = !!(s.initialAbility && s.initialAbility.name && s.initialAbility.name.trim() !== '');
+    if (initDisplay) initDisplay.style.display = hasInitial ? 'block' : 'none';
+    if (initEmpty) initEmpty.style.display = hasInitial ? 'none' : 'block';
+
+    if (hasInitial) {
       if (initName) initName.textContent = s.initialAbility.name;
-      if (initType) initType.textContent = s.initialAbility.type;
-      if (initDesc) initDesc.textContent = s.initialAbility.desc;
+      if (initType) initType.textContent = s.initialAbility.type || '';
+      if (initDesc) initDesc.textContent = s.initialAbility.desc || '';
     }
 
     // Lista de Habilidades Únicas e Gerais
@@ -375,14 +383,47 @@
   }
 
   function updateSilhouetteLimbState(kebabLimb, data) {
-    const svgLimb = document.getElementById(`svg-limb-${kebabLimb}`);
-    if (!svgLimb) return;
+    if (!data) return;
+    const limbGroups = document.querySelectorAll(`.body-limb[data-limb="${kebabLimb}"]`);
+    if (!limbGroups || limbGroups.length === 0) return;
 
-    if (data.checked || (data.max > 0 && data.cur >= data.max)) {
-      svgLimb.classList.add('damaged');
-    } else {
-      svgLimb.classList.remove('damaged');
+    let ratio = 0;
+    if (data.checked) {
+      ratio = 1;
+    } else if (data.max > 0) {
+      ratio = Math.min(1, Math.max(0, (data.cur || 0) / data.max));
+    } else if ((data.cur || 0) > 0) {
+      ratio = 1;
     }
+
+    // Interpolação suave: de Branco (#ffffff) para Vermelho Sangue (#b91c1c) conforme atinge o máximo
+    const r = Math.round(255 - ratio * (255 - 185));
+    const g = Math.round(255 - ratio * (255 - 28));
+    const b = Math.round(255 - ratio * (255 - 28));
+    const fillColor = ratio === 0 ? '#ffffff' : `rgb(${r}, ${g}, ${b})`;
+
+    limbGroups.forEach(group => {
+      const path = group.querySelector('.limb-path');
+      if (path) {
+        path.style.fill = fillColor;
+        if (ratio >= 0.75) {
+          path.style.stroke = '#ff4d4d';
+          path.style.filter = `drop-shadow(0 0 ${Math.round(ratio * 5)}px rgba(255, 77, 77, 0.7))`;
+        } else if (ratio > 0.25) {
+          path.style.stroke = 'rgba(255, 77, 77, 0.45)';
+          path.style.filter = 'none';
+        } else {
+          path.style.stroke = '#1a1a1a';
+          path.style.filter = 'none';
+        }
+      }
+
+      if (ratio >= 1 || data.checked) {
+        group.classList.add('damaged');
+      } else {
+        group.classList.remove('damaged');
+      }
+    });
   }
 
   // --- Render: Atributos & Aspectos ---
@@ -740,13 +781,13 @@
 
     // Animação e destaque no SVG
     const kebabLimb = limbToKebab(limbKey);
-    const svgLimb = document.getElementById(`svg-limb-${kebabLimb}`);
-    if (svgLimb) {
-      svgLimb.classList.add('critical-hit');
+    const hitElements = document.querySelectorAll(`.body-limb[data-limb="${kebabLimb}"]`);
+    hitElements.forEach(el => {
+      el.classList.add('critical-hit');
       setTimeout(() => {
-        svgLimb.classList.remove('critical-hit');
+        el.classList.remove('critical-hit');
       }, 2000);
-    }
+    });
 
     // Feedback no painel
     const feedbackEl = document.getElementById('body-roll-feedback');
@@ -1166,19 +1207,36 @@
     if (btnEditInitialAbility) {
       btnEditInitialAbility.addEventListener('click', () => {
         const s = getActiveSheet();
-        const init = s.initialAbility || { name: 'Voracidade', type: '(EFEITO PASSIVO)', desc: '' };
-        const newName = prompt('Nome da Habilidade Inicial:', init.name);
+        const init = s.initialAbility || { name: '', type: '(EFEITO PASSIVO)', desc: '' };
+        const newName = prompt('Nome da Habilidade Inicial (deixe vazio para remover):', init.name || '');
         if (newName === null) return;
-        const newType = prompt('Tipo (ex: (EFEITO PASSIVO), AÇÃO):', init.type);
+        if (!newName.trim()) {
+          s.initialAbility = null;
+          renderAbilities();
+          triggerAutoSave();
+          return;
+        }
+        const newType = prompt('Tipo (ex: (EFEITO PASSIVO), AÇÃO):', init.type || '(EFEITO PASSIVO)');
         if (newType === null) return;
-        const newDesc = prompt('Descrição dos efeitos:', init.desc);
+        const newDesc = prompt('Descrição dos efeitos:', init.desc || '');
         if (newDesc === null) return;
 
         s.initialAbility = {
-          name: newName.trim() || 'Habilidade',
+          name: newName.trim(),
           type: newType.trim() || '(EFEITO)',
           desc: newDesc.trim()
         };
+        renderAbilities();
+        triggerAutoSave();
+      });
+    }
+
+    const btnDeleteInitialAbility = document.getElementById('btn-delete-initial-ability');
+    if (btnDeleteInitialAbility) {
+      btnDeleteInitialAbility.addEventListener('click', e => {
+        e.stopPropagation();
+        const s = getActiveSheet();
+        s.initialAbility = null;
         renderAbilities();
         triggerAutoSave();
       });

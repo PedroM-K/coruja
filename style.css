@@ -579,13 +579,9 @@ html, body {
 /* Interactive highlight on hover/active */
 .body-limb.highlight .limb-path,
 .body-limb:hover .limb-path {
-  fill: #ff4d4d;
-  filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.9));
-}
-
-.body-limb.damaged .limb-path {
-  fill: #b91c1c;
-  stroke: #ff4d4d;
+  fill: #ff4d4d !important;
+  stroke: #ff1744 !important;
+  filter: drop-shadow(0 0 8px rgba(255, 77, 77, 0.9)) !important;
 }
 
 .body-limb.critical-hit .limb-path {
@@ -593,8 +589,8 @@ html, body {
 }
 
 @keyframes pulseHit {
-  0% { fill: #ff1744; filter: drop-shadow(0 0 12px #ff1744); }
-  100% { fill: #ffd700; filter: drop-shadow(0 0 20px #ffd700); }
+  0% { fill: #ff1744 !important; filter: drop-shadow(0 0 12px #ff1744) !important; }
+  100% { fill: #ffd700 !important; filter: drop-shadow(0 0 20px #ffd700) !important; }
 }
 
 /* Limb Boxes around Silhouette */
