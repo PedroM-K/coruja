@@ -798,6 +798,7 @@ html, body {
 .btn-attr-roll {
   background: transparent;
   border: none;
+  color: var(--color-text-main, #e0e0e0);
   font-family: var(--font-serif);
   font-size: 0.8rem;
   font-weight: 700;

@@ -59,67 +59,12 @@
       },
       zona: 'normal', // 'reduzida' | 'normal' | 'aumentada'
       inventory: {
-        carregados: [
-          {
-            id: 'inv_1',
-            name: 'Lâmina Serrilhada',
-            damage: '1d6+1',
-            stress: '0',
-            desc: 'Faca improvisada de metal oxidado.'
-          },
-          {
-            id: 'inv_2',
-            name: 'Revólver Gasto',
-            damage: '1d10',
-            stress: '+1',
-            desc: 'Tambor de 6 tiros. Ruidoso e letal.'
-          }
-        ],
-        guardados: [
-          {
-            id: 'inv_3',
-            type: 'Utilitário',
-            name: 'Atadura Imunda',
-            burden: 1,
-            uses: '2/2',
-            desc: 'Estanca sangramentos leves.'
-          },
-          {
-            id: 'inv_4',
-            type: 'Oculto',
-            name: 'Giz de Osso',
-            burden: 1,
-            uses: '5/5',
-            desc: 'Usado para desenhar círculos de proteção.'
-          }
-        ],
-        slotsUsed: [true, true, false, false, false]
+        carregados: [],
+        guardados: [],
+        slotsUsed: [false, false, false, false, false]
       },
-      knowledge: [
-        {
-          id: 'kn_1',
-          name: 'Sobrevivência Urbana',
-          attr: 'prontidao',
-          bonus: 1,
-          desc: 'Navegação por escombros e esconderijos.'
-        },
-        {
-          id: 'kn_2',
-          name: 'Ocultismo Proibido',
-          attr: 'mente',
-          bonus: 2,
-          desc: 'Identificação de símbolos e entidades do Oblívio.'
-        }
-      ],
-      mazelas: [
-        {
-          id: 'mz_1',
-          name: 'Pesadelos Recorrentes',
-          severity: 'Leve',
-          type: 'Mental',
-          desc: 'Ao acordar de um descanso curto, faça um teste de Determinação para não acordar em pânico.'
-        }
-      ],
+      knowledge: [],
+      mazelas: [],
       notes: ''
     };
   }
@@ -190,6 +135,42 @@
       state.activeSheetId = defaultSheet.id;
       saveSheetsToStorage();
     } else {
+      // Limpeza de itens padrão iniciais legados nas fichas salvas
+      let migrated = false;
+      state.sheets.forEach(sheet => {
+        if (!sheet) return;
+        if (Array.isArray(sheet.knowledge)) {
+          const prevLen = sheet.knowledge.length;
+          sheet.knowledge = sheet.knowledge.filter(k => k.id !== 'kn_1' && k.id !== 'kn_2' && k.name !== 'Sobrevivência Urbana' && k.name !== 'Ocultismo Proibido');
+          if (sheet.knowledge.length !== prevLen) migrated = true;
+        }
+        if (Array.isArray(sheet.mazelas)) {
+          const prevLen = sheet.mazelas.length;
+          sheet.mazelas = sheet.mazelas.filter(m => m.id !== 'mz_1' && m.name !== 'Pesadelos Recorrentes');
+          if (sheet.mazelas.length !== prevLen) migrated = true;
+        }
+        if (sheet.inventory) {
+          if (Array.isArray(sheet.inventory.carregados)) {
+            const prevLen = sheet.inventory.carregados.length;
+            sheet.inventory.carregados = sheet.inventory.carregados.filter(i => i.id !== 'inv_1' && i.id !== 'inv_2' && i.name !== 'Lâmina Serrilhada' && i.name !== 'Revólver Gasto');
+            if (sheet.inventory.carregados.length !== prevLen) migrated = true;
+          }
+          if (Array.isArray(sheet.inventory.guardados)) {
+            const prevLen = sheet.inventory.guardados.length;
+            sheet.inventory.guardados = sheet.inventory.guardados.filter(i => i.id !== 'inv_3' && i.id !== 'inv_4' && i.name !== 'Atadura Imunda' && i.name !== 'Giz de Osso');
+            if (sheet.inventory.guardados.length !== prevLen) {
+              migrated = true;
+              if (sheet.inventory.guardados.length === 0 && Array.isArray(sheet.inventory.slotsUsed)) {
+                sheet.inventory.slotsUsed = [false, false, false, false, false];
+              }
+            }
+          }
+        }
+      });
+      if (migrated) {
+        saveSheetsToStorage();
+      }
+
       const activeId = localStorage.getItem(STORAGE_KEY_ACTIVE);
       if (activeId && state.sheets.some(s => s.id === activeId)) {
         state.activeSheetId = activeId;
