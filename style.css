@@ -840,10 +840,10 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 50%, #f6f2e9 0%, #ebe4d6 70%, #ded5c3 100%);
-  border: 2px solid #23242e;
+  background: radial-gradient(circle at 50% 50%, rgba(22, 25, 40, 0.7) 0%, rgba(10, 11, 18, 0.97) 75%);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.22), 0 6px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
   overflow: hidden;
 }
 
@@ -853,7 +853,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 0 16px rgba(0, 0, 0, 0.9));
   z-index: 1;
 }
 
@@ -863,11 +863,16 @@ html, body {
 }
 
 .limb-path {
-  fill: #000000;
-  stroke: #000000;
-  stroke-width: 0.6px;
+  fill: #222638;
+  stroke: #3e445f;
+  stroke-width: 0.9px;
   transition: fill 0.3s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease, filter 0.3s ease;
   cursor: pointer;
+}
+
+.pelvis-contour {
+  stroke: rgba(255, 255, 255, 0.65);
+  pointer-events: none;
 }
 
 /* Destaque e Hover sobre membros anatômicos */
@@ -875,7 +880,7 @@ html, body {
 .body-limb.highlight .limb-path {
   fill: var(--accent-crimson) !important;
   stroke: #ffffff !important;
-  filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.95)) !important;
+  filter: drop-shadow(0 0 14px rgba(239, 68, 68, 0.95)) !important;
 }
 
 .body-limb.critical-hit .limb-path {
@@ -884,28 +889,29 @@ html, body {
 
 @keyframes pulseCritical {
   0% { fill: #dc2626 !important; stroke: #fef08a !important; filter: drop-shadow(0 0 14px #dc2626) !important; }
-  100% { fill: #000000 !important; stroke: #ffffff !important; filter: drop-shadow(0 0 20px #dc2626) !important; }
+  100% { fill: #222638 !important; stroke: #ffffff !important; filter: drop-shadow(0 0 20px #dc2626) !important; }
 }
 
-/* Caixas Anatômicas Retangulares Estilo Dossiê Autópsia */
+/* Caixas Anatômicas Retangulares Estilo RPG Sombrio */
 .limb-box {
   position: absolute;
-  background: #fdfcfa;
-  border: 2px solid #0f1016;
-  border-radius: 3px;
-  padding: 5px 7px 4px;
+  background: rgba(14, 15, 24, 0.93);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  padding: 6px 8px 5px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  gap: 3px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
   z-index: 3;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .limb-box:hover {
-  border-color: #000000;
+  border-color: var(--accent-gold);
   transform: scale(1.02);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.25);
 }
 
 /* Posições Precisas dos Membros */
@@ -953,9 +959,9 @@ html, body {
 
 .limb-col-label {
   font-size: 0.64rem;
-  font-weight: 900;
+  font-weight: 800;
   font-family: var(--font-serif);
-  color: #111111;
+  color: var(--accent-gold);
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -963,9 +969,9 @@ html, body {
 .limb-injury-chk {
   width: 13px;
   height: 13px;
-  accent-color: #dc2626;
+  accent-color: var(--accent-crimson);
   cursor: pointer;
-  opacity: 0.75;
+  opacity: 0.8;
   transition: opacity 0.15s ease;
 }
 
@@ -978,9 +984,9 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f2eee4;
-  border: 1px solid rgba(0, 0, 0, 0.22);
-  border-radius: 3px;
+  background: var(--bg-recessed);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
   padding: 3px 4px;
   margin: 1px 0;
 }
@@ -996,14 +1002,14 @@ html, body {
 .limb-box-sep {
   width: 1px;
   height: 18px;
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--border-subtle);
   margin: 0 3px;
 }
 
 .btn-limb-step, .btn-limb-max-step {
-  background: #e3ded2;
-  border: 1px solid rgba(0, 0, 0, 0.28);
-  color: #111111;
+  background: var(--bg-surface-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
   font-size: 0.82rem;
   font-weight: 900;
   width: 17px;
@@ -1011,36 +1017,37 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .btn-limb-step:hover, .btn-limb-max-step:hover {
-  background: #000000;
-  color: #ffffff;
-  border-color: #000000;
+  background: var(--accent-gold);
+  color: #07070b;
+  border-color: var(--accent-gold);
 }
 
 .limb-cur, .limb-max {
   font-family: var(--font-serif);
   font-size: 1.05rem;
   font-weight: 900;
-  color: #000000;
+  color: #ffffff;
   min-width: 16px;
   text-align: center;
 }
 
 .limb-max {
   cursor: pointer;
-  border-bottom: 1px dotted rgba(0, 0, 0, 0.45);
+  color: var(--text-secondary);
+  border-bottom: 1px dotted var(--text-faint);
 }
 
 .limb-max:hover {
-  color: #b45309;
-  border-bottom-color: #b45309;
+  color: var(--accent-gold);
+  border-bottom-color: var(--accent-gold);
 }
 
 /* Rodapé com o Nome Centrado do Membro */
@@ -1051,11 +1058,11 @@ html, body {
 
 .limb-title-text {
   font-size: 0.68rem;
-  font-weight: 900;
+  font-weight: 800;
   font-family: var(--font-serif);
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: #000000;
+  color: #ffffff;
   display: block;
 }
 
@@ -1063,7 +1070,7 @@ html, body {
 .limb-meter {
   width: 100%;
   height: 2.5px;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 1px;
   overflow: hidden;
   margin-top: 1px;
@@ -1072,7 +1079,7 @@ html, body {
 .limb-meter-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #10b981 0%, #f59e0b 60%, #dc2626 100%);
+  background: linear-gradient(90deg, #10b981 0%, #facc15 60%, #ef4444 100%);
   transition: width 0.3s ease, background 0.3s ease;
 }
 

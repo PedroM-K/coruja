@@ -468,12 +468,12 @@
       ratio = 1;
     }
 
-    // No estado normal: Preto Puro (#000000) exatamente como na ficha anatômica original
-    // Conforme o estresse aumenta ou se estiver com lesão, transiciona para Vermelho Sangue (#dc2626)
-    const r = Math.round(ratio * 220);
-    const g = Math.round(ratio * 38);
-    const b = Math.round(ratio * 38);
-    const fillColor = ratio === 0 ? '#000000' : `rgb(${r}, ${g}, ${b})`;
+    // No tema sombrio: Grafite/Slate Anatômico (#222638) no estado normal
+    // Conforme o estresse aumenta ou se estiver lesionado, transiciona para Vermelho Sangue (#dc2626)
+    const r = Math.round(34 + ratio * (220 - 34));
+    const g = Math.round(38 + ratio * (38 - 38));
+    const b = Math.round(56 + ratio * (38 - 56));
+    const fillColor = ratio === 0 ? '#222638' : `rgb(${r}, ${g}, ${b})`;
 
     limbGroups.forEach(group => {
       const path = group.querySelector('.limb-path');
@@ -483,10 +483,10 @@
           path.style.stroke = '#ffffff';
           path.style.filter = `drop-shadow(0 0 ${Math.round(4 + ratio * 8)}px rgba(220, 38, 38, 0.95))`;
         } else if (ratio > 0.25) {
-          path.style.stroke = 'rgba(220, 38, 38, 0.6)';
-          path.style.filter = 'drop-shadow(0 0 4px rgba(220, 38, 38, 0.4))';
+          path.style.stroke = 'rgba(220, 38, 38, 0.7)';
+          path.style.filter = 'drop-shadow(0 0 6px rgba(220, 38, 38, 0.5))';
         } else {
-          path.style.stroke = '#000000';
+          path.style.stroke = '#3e445f';
           path.style.filter = 'none';
         }
       }

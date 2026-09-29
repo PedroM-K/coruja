@@ -326,34 +326,54 @@
                 </div>
               </div>
 
-              <!-- SVG Silhouette Container with Rich Anatomical Silhouette -->
+              <!-- SVG Silhouette Container with Faithful Anatomical Figure -->
               <div class="silhouette-wrapper" id="silhouette-container">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 460" id="body-mannequin-svg" class="mannequin-svg">
-                  <!-- Head (part of Torso in Oblívio rules) -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 480" id="body-mannequin-svg" class="mannequin-svg">
+                  <defs>
+                    <radialGradient id="bodyBacklight" cx="50%" cy="45%" r="55%">
+                      <stop offset="0%" stop-color="rgba(120, 119, 198, 0.18)"/>
+                      <stop offset="60%" stop-color="rgba(239, 68, 68, 0.06)"/>
+                      <stop offset="100%" stop-color="transparent"/>
+                    </radialGradient>
+                    <filter id="limbGlow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                  </defs>
+
+                  <ellipse cx="120" cy="240" rx="95" ry="210" fill="url(#bodyBacklight)" />
+
+                  <!-- Head & Neck (part of Torso) -->
                   <g id="svg-limb-head" class="body-limb" data-limb="torso">
-                    <path d="M 120 18 C 110 18, 103 26, 103 38 C 103 52, 110 63, 114 68 L 116 76 L 124 76 L 126 68 C 130 63, 137 52, 137 38 C 137 26, 130 18, 120 18 Z" class="limb-path" />
+                    <path class="limb-path" d="M 120 14 C 108 14, 102 24, 102 36 C 102 43, 104 48, 107 52 C 110 56, 114 62, 114 70 L 126 70 C 126 62, 130 56, 133 52 C 136 48, 138 43, 138 36 C 138 24, 132 14, 120 14 Z" />
                   </g>
-                  <!-- Torso -->
+
+                  <!-- Torso (Tronco) -->
                   <g id="svg-limb-torso" class="body-limb" data-limb="torso">
-                    <path d="M 116 76 C 112 78, 98 83, 90 92 C 86 97, 88 106, 89 122 C 90 138, 92 154, 91 170 C 90 182, 87 194, 88 206 C 89 214, 96 222, 108 226 L 120 230 L 132 226 C 144 222, 151 214, 152 206 C 153 194, 150 182, 149 170 C 148 154, 150 138, 151 122 C 152 106, 154 97, 150 92 C 142 83, 128 78, 124 76 Z" class="limb-path" />
+                    <path class="limb-path" d="M 114 70 C 104 72, 94 77, 88 84 C 84 89, 87 100, 92 114 C 95 124, 97 142, 96 168 C 95 186, 92 196, 92 206 C 92 216, 98 226, 106 232 C 112 236, 117 238, 120 238 C 123 238, 128 236, 134 232 C 142 226, 148 216, 148 206 C 148 196, 145 186, 144 168 C 143 142, 145 124, 148 114 C 153 100, 156 89, 152 84 C 146 77, 136 72, 126 70 Z" />
                   </g>
-                  <!-- Pelvic anatomical outline contour -->
-                  <path d="M 94 224 L 120 246 L 146 224 M 120 246 L 120 264" stroke="#f4efe6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9" />
+
+                  <!-- Pelvic underwear anatomical outline -->
+                  <path class="pelvis-contour" d="M 92 208 C 104 220, 114 234, 120 238 C 126 234, 136 220, 148 208 M 120 238 L 120 252" stroke="rgba(255, 255, 255, 0.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
                   <!-- Braço Direito (Viewer's Left) -->
                   <g id="svg-limb-arm-right" class="body-limb" data-limb="arm-right">
-                    <path d="M 88 94 C 82 96, 74 105, 71 116 C 68 128, 64 148, 60 168 C 57 182, 53 200, 48 214 C 45 221, 40 230, 36 238 L 34 246 L 38 248 C 42 242, 45 237, 49 231 L 47 243 L 50 244 C 53 238, 56 232, 58 225 C 62 212, 67 194, 71 176 C 75 158, 80 140, 83 128 C 85 120, 87 114, 88 106 Z" class="limb-path" />
+                    <path class="limb-path" d="M 88 84 C 82 87, 75 96, 73 108 C 70 120, 68 136, 65 152 C 63 162, 59 176, 54 192 C 52 198, 50 204, 49 208 C 45 212, 38 218, 36 224 C 35 227, 37 230, 40 228 C 43 226, 46 222, 48 217 L 44 246 C 44 249, 47 250, 48 247 L 52 226 L 52 254 C 52 257, 55 257, 56 254 L 59 228 L 60 250 C 61 253, 64 252, 65 249 L 67 228 L 68 240 C 69 243, 72 242, 73 239 L 75 220 C 76 214, 76 208, 75 204 C 74 194, 75 178, 77 166 C 79 152, 82 136, 85 124 C 88 116, 91 110, 92 114 C 89 104, 88 92, 88 84 Z" />
                   </g>
+
                   <!-- Braço Esquerdo (Viewer's Right) -->
                   <g id="svg-limb-arm-left" class="body-limb" data-limb="arm-left">
-                    <path d="M 152 94 C 158 96, 166 105, 169 116 C 172 128, 176 148, 180 168 C 183 182, 187 200, 192 214 C 195 221, 200 230, 204 238 L 206 246 L 202 248 C 198 242, 195 237, 191 231 L 193 243 L 190 244 C 187 238, 184 232, 182 225 C 178 212, 173 194, 169 176 C 165 158, 160 140, 157 128 C 155 120, 153 114, 152 106 Z" class="limb-path" />
+                    <path class="limb-path" d="M 152 84 C 158 87, 165 96, 167 108 C 170 120, 172 136, 175 152 C 177 162, 181 176, 186 192 C 188 198, 190 204, 191 208 C 195 212, 202 218, 204 224 C 205 227, 203 230, 200 228 C 197 226, 194 222, 192 217 L 196 246 C 196 249, 193 250, 192 247 L 188 226 L 188 254 C 188 257, 185 257, 184 254 L 181 228 L 180 250 C 179 253, 176 252, 175 249 L 173 228 L 172 240 C 171 243, 168 242, 167 239 L 165 220 C 164 214, 164 208, 165 204 C 166 194, 165 178, 163 166 C 161 152, 158 136, 155 124 C 152 116, 149 110, 148 114 C 151 104, 152 92, 152 84 Z" />
                   </g>
+
                   <!-- Perna Direita (Viewer's Left) -->
                   <g id="svg-limb-leg-right" class="body-limb" data-limb="leg-right">
-                    <path d="M 94 223 C 96 236, 97 254, 98 276 C 99 296, 99 316, 98 334 C 97 352, 95 374, 95 394 C 95 408, 93 420, 92 432 L 86 436 C 80 437, 72 437, 68 438 L 68 442 L 102 442 C 102 434, 103 422, 104 406 C 105 388, 107 366, 108 348 C 109 330, 110 310, 111 290 C 112 270, 114 250, 115 231 Z" class="limb-path" />
+                    <path class="limb-path" d="M 94 216 C 92 232, 90 254, 90 282 C 90 306, 91 324, 91 342 C 91 350, 89 356, 88 368 C 86 384, 86 406, 88 424 C 89 434, 90 442, 92 448 L 84 458 C 80 463, 82 468, 88 468 L 108 468 C 112 468, 114 463, 112 458 L 106 448 C 107 440, 108 428, 108 412 C 108 392, 109 372, 110 354 C 111 342, 113 334, 113 322 C 114 300, 116 270, 120 238 C 114 236, 104 228, 94 216 Z" />
                   </g>
+
                   <!-- Perna Esquerda (Viewer's Right) -->
                   <g id="svg-limb-leg-left" class="body-limb" data-limb="leg-left">
-                    <path d="M 146 223 C 144 236, 143 254, 142 276 C 141 296, 141 316, 142 334 C 143 352, 145 374, 145 394 C 145 408, 147 420, 148 432 L 154 436 C 160 437, 168 437, 172 438 L 172 442 L 138 442 C 138 434, 137 422, 136 406 C 135 388, 133 366, 132 348 C 131 330, 130 310, 129 290 C 128 270, 126 250, 125 231 Z" class="limb-path" />
+                    <path class="limb-path" d="M 146 216 C 148 232, 150 254, 150 282 C 150 306, 149 324, 149 342 C 149 350, 151 356, 152 368 C 154 384, 154 406, 152 424 C 151 434, 150 442, 148 448 L 156 458 C 160 463, 158 468, 152 468 L 132 468 C 128 468, 126 463, 128 458 L 134 448 C 133 440, 132 428, 132 412 C 132 392, 131 372, 130 354 C 129 342, 127 334, 127 322 C 126 300, 124 270, 120 238 C 126 236, 136 228, 146 216 Z" />
                   </g>
                 </svg>
               </div>
